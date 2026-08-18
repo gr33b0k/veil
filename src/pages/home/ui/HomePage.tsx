@@ -1,4 +1,4 @@
-import { Header } from "@/widgets";
+import { Header, Workspace } from "@/widgets";
 import { Background } from "@/shared";
 
 function HomePage() {
@@ -6,6 +6,7 @@ function HomePage() {
     <>
       <Background />
       <Header />
+      <Workspace />
     </>
   );
 }

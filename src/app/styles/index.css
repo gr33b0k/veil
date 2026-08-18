@@ -1,11 +1,20 @@
+@import url("https://fonts.googleapis.com/css2?family=Golos+Text:wght@400..900&display=swap");
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #0c0c1c;
-  --color-surface: #141329;
+  --color-bg: #030315;
+  --color-surface: #111122;
   --color-elevated: #1b1a33;
-  --color-accent: #4e46dc;
+  --color-accent: #8167e7;
   --color-border: #1e1e2d;
   --color-text: #ebeaef;
   --color-text-muted: #b0b2d1;
+
+  --font-golos: "Golos Text", sans-serif;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -24px;
+  }
 }
