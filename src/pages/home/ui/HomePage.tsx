@@ -1,10 +1,12 @@
 import { Header } from "@/widgets";
+import { Background } from "@/shared";
 
 function HomePage() {
   return (
-    <main className="bg-bg h-dvh p-4">
+    <>
+      <Background />
       <Header />
-    </main>
+    </>
   );
 }
 

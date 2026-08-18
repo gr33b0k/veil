@@ -2,7 +2,7 @@ import { Logo } from "@/shared";
 
 function Header() {
   return (
-    <header className="flex items-center bg-surface border-2 rounded-xl justify-between p-4 border-border">
+    <header className="flex items-center border-b justify-between px-6 p-8 h-16 border-border">
       <Logo />
     </header>
   );
