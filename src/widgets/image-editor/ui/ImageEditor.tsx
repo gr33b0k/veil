@@ -1,6 +1,7 @@
 import { useCanvasViewport, type Tool } from "@/features";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Toolbar from "./Toolbar";
+import { drawCanvas } from "../lib/drawCanvas";
 
 type ImageViewerProps = {
   image: File;
@@ -14,13 +15,48 @@ const cursors: Record<Tool, string> = {
 
 function ImageEditor({ image }: ImageViewerProps) {
   const [tool, setTool] = useState<Tool>("cursor");
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const { zoom, startPan, movePan, stopPan, handleZoomChange, handleFit } =
+  const [imageElement, setImageElement] = useState<HTMLImageElement | null>(
+    null,
+  );
+
+  useEffect(() => {
+    const img = new Image();
+
+    const src = URL.createObjectURL(image);
+
+    img.src = src;
+
+    img.onload = () => {
+      setImageElement(img);
+    };
+
+    return () => {
+      URL.revokeObjectURL(src);
+    };
+  }, [image]);
+
+  const { viewport, startPan, movePan, stopPan, handleZoomChange, handleFit } =
     useCanvasViewport({
       canvasRef,
-      image,
+      image: imageElement,
     });
+
+  useEffect(() => {
+    if (!imageElement) return;
+
+    const canvas = canvasRef.current;
+
+    if (!canvas) return;
+
+    drawCanvas({
+      canvas,
+      image: imageElement,
+      viewport,
+    });
+  }, [imageElement, viewport]);
 
   function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
     if (tool === "cursor") {
@@ -57,7 +93,7 @@ function ImageEditor({ image }: ImageViewerProps) {
       />
 
       <Toolbar
-        zoom={zoom}
+        zoom={viewport.zoom}
         onZoomChange={handleZoomChange}
         onFit={handleFit}
         currentTool={tool}

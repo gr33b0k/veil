@@ -3,7 +3,7 @@ import { zoomAtPoint, zoomIn, zoomOut } from "../lib/zoom";
 
 type UseCanvasViewportProps = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
-  image: File;
+  image: HTMLImageElement | null;
 };
 
 export function useCanvasViewport({
@@ -18,43 +18,10 @@ export function useCanvasViewport({
 
   const [isPanning, setIsPanning] = useState(false);
 
-  const imgRef = useRef<HTMLImageElement | null>(null);
-
   const panStart = useRef({
     x: 0,
     y: 0,
   });
-
-  function draw() {
-    const canvas = canvasRef.current;
-    const img = imgRef.current;
-
-    if (!canvas || !img) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const rect = canvas.getBoundingClientRect();
-
-    const dpr = window.devicePixelRatio || 1;
-
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    const padding = 40;
-
-    const scale = Math.min(
-      (rect.width - padding * 2) / img.naturalWidth,
-      (rect.height - padding * 2) / img.naturalHeight,
-    );
-
-    const width = img.naturalWidth * scale * viewport.zoom;
-    const height = img.naturalHeight * scale * viewport.zoom;
-
-    ctx.drawImage(img, viewport.x, viewport.y, width, height);
-  }
 
   function startPan(x: number, y: number) {
     setIsPanning(true);
@@ -87,46 +54,42 @@ export function useCanvasViewport({
     setIsPanning(false);
   }
 
+  function handleZoomChange(zoom: number) {
+    setViewport((current) => ({
+      ...current,
+      zoom,
+    }));
+  }
+
+  function handleFit() {
+    const canvas = canvasRef.current;
+
+    if (!canvas || !image) return;
+
+    const rect = canvas.getBoundingClientRect();
+
+    const padding = 40;
+
+    const scale = Math.min(
+      (rect.width - padding * 2) / image.naturalWidth,
+      (rect.height - padding * 2) / image.naturalHeight,
+    );
+
+    const width = image.naturalWidth * scale;
+    const height = image.naturalHeight * scale;
+
+    setViewport({
+      zoom: 1,
+      x: (rect.width - width) / 2,
+      y: (rect.height - height) / 2,
+    });
+  }
+
   useEffect(() => {
-    const img = new Image();
-    const src = URL.createObjectURL(image);
-
-    img.src = src;
-
-    img.onload = () => {
-      imgRef.current = img;
-
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      const rect = canvas.getBoundingClientRect();
-
-      const padding = 40;
-
-      const scale = Math.min(
-        (rect.width - padding * 2) / img.naturalWidth,
-        (rect.height - padding * 2) / img.naturalHeight,
-      );
-
-      const width = img.naturalWidth * scale;
-      const height = img.naturalHeight * scale;
-
-      setViewport({
-        zoom: 1,
-        x: (rect.width - width) / 2,
-        y: (rect.height - height) / 2,
-      });
-    };
-
-    return () => {
-      URL.revokeObjectURL(src);
-      imgRef.current = null;
-    };
+    if (image) {
+      handleFit();
+    }
   }, [image]);
-
-  useEffect(() => {
-    draw();
-  }, [viewport]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -170,40 +133,8 @@ export function useCanvasViewport({
     };
   }, []);
 
-  function handleZoomChange(zoom: number) {
-    setViewport((current) => ({
-      ...current,
-      zoom,
-    }));
-  }
-
-  function handleFit() {
-    const canvas = canvasRef.current;
-    const img = imgRef.current;
-
-    if (!canvas || !img) return;
-
-    const rect = canvas.getBoundingClientRect();
-
-    const padding = 40;
-
-    const scale = Math.min(
-      (rect.width - padding * 2) / img.naturalWidth,
-      (rect.height - padding * 2) / img.naturalHeight,
-    );
-
-    const width = img.naturalWidth * scale;
-    const height = img.naturalHeight * scale;
-
-    setViewport({
-      zoom: 1,
-      x: (rect.width - width) / 2,
-      y: (rect.height - height) / 2,
-    });
-  }
-
   return {
-    zoom: viewport.zoom,
+    viewport,
     startPan,
     movePan,
     stopPan,
