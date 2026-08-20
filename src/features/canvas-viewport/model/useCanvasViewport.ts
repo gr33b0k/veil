@@ -56,6 +56,37 @@ export function useCanvasViewport({
     ctx.drawImage(img, viewport.x, viewport.y, width, height);
   }
 
+  function startPan(x: number, y: number) {
+    setIsPanning(true);
+
+    panStart.current = {
+      x,
+      y,
+    };
+  }
+
+  function movePan(x: number, y: number) {
+    if (!isPanning) return;
+
+    const dx = x - panStart.current.x;
+    const dy = y - panStart.current.y;
+
+    panStart.current = {
+      x,
+      y,
+    };
+
+    setViewport((current) => ({
+      ...current,
+      x: current.x + dx,
+      y: current.y + dy,
+    }));
+  }
+
+  function stopPan() {
+    setIsPanning(false);
+  }
+
   useEffect(() => {
     const img = new Image();
     const src = URL.createObjectURL(image);
@@ -146,43 +177,6 @@ export function useCanvasViewport({
     }));
   }
 
-  function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
-    if (e.button !== 0 && e.button !== 1) return;
-
-    setIsPanning(true);
-
-    panStart.current = {
-      x: e.clientX,
-      y: e.clientY,
-    };
-
-    e.currentTarget.setPointerCapture(e.pointerId);
-  }
-
-  function handlePointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
-    if (!isPanning) return;
-
-    const dx = e.clientX - panStart.current.x;
-    const dy = e.clientY - panStart.current.y;
-
-    panStart.current = {
-      x: e.clientX,
-      y: e.clientY,
-    };
-
-    setViewport((current) => ({
-      ...current,
-      x: current.x + dx,
-      y: current.y + dy,
-    }));
-  }
-
-  function handlePointerUp(e: React.PointerEvent<HTMLCanvasElement>) {
-    setIsPanning(false);
-
-    e.currentTarget.releasePointerCapture(e.pointerId);
-  }
-
   function handleFit() {
     const canvas = canvasRef.current;
     const img = imgRef.current;
@@ -210,11 +204,10 @@ export function useCanvasViewport({
 
   return {
     zoom: viewport.zoom,
-    isPanning,
+    startPan,
+    movePan,
+    stopPan,
     handleZoomChange,
-    handlePointerDown,
-    handlePointerMove,
-    handlePointerUp,
     handleFit,
   };
 }
