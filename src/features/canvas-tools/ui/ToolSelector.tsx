@@ -38,7 +38,7 @@ function ToolSelector({ currentTool, onToolChange }: ToolSelectorProps) {
         </div>
       )}
       <button
-        className="p-3 rounded-xl bg-surface border border-border text-text cursor-pointer"
+        className="p-3 rounded-xl bg-surface border border-border text-text cursor-pointer transition-colors duration-300 hover:bg-elevated"
         onClick={() => setIsOpen((open) => !open)}
       >
         {(() => {

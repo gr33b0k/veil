@@ -8,14 +8,20 @@ type ZoomControlsProps = {
 
 function ZoomControls({ zoom, onZoomChange }: ZoomControlsProps) {
   return (
-    <div className="flex items-center gap-6 p-3 rounded-xl bg-surface border border-border text-text font-golos text-lg">
-      <button onClick={() => onZoomChange(zoomOut(zoom))}>
+    <div className="flex items-center gap-3 rounded-xl overflow-hidden bg-surface border border-border text-text font-golos text-lg">
+      <button
+        className="p-3 cursor-pointer transition-colors duration-300 hover:bg-elevated"
+        onClick={() => onZoomChange(zoomOut(zoom))}
+      >
         <Minus />
       </button>
       <span className="block w-14 tabular-nums text-center">
         {Math.round(zoom * 100)}%
       </span>
-      <button onClick={() => onZoomChange(zoomIn(zoom))}>
+      <button
+        className="p-3 cursor-pointer transition-colors duration-300 hover:bg-elevated"
+        onClick={() => onZoomChange(zoomIn(zoom))}
+      >
         <Plus />
       </button>
     </div>
