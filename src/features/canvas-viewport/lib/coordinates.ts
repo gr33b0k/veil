@@ -5,13 +5,25 @@ type ScreenToImageParams = {
   y: number;
   viewport: Viewport;
   scale: number;
+  imageWidth: number;
+  imageHeight: number;
 };
 
-export function screenToImage({ x, y, viewport, scale }: ScreenToImageParams) {
+export function screenToImage({
+  x,
+  y,
+  viewport,
+  scale,
+  imageWidth,
+  imageHeight,
+}: ScreenToImageParams) {
   const totalScale = scale * viewport.zoom;
 
+  const imageX = (x - viewport.x) / totalScale;
+  const imageY = (y - viewport.y) / totalScale;
+
   return {
-    x: (x - viewport.x) / totalScale,
-    y: (y - viewport.y) / totalScale,
+    x: Math.max(0, Math.min(imageX, imageWidth)),
+    y: Math.max(0, Math.min(imageY, imageHeight)),
   };
 }

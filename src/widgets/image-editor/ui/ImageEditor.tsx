@@ -104,6 +104,8 @@ function ImageEditor({ image }: ImageViewerProps) {
         y: canvasY,
         viewport,
         scale,
+        imageWidth: imageElement.naturalWidth,
+        imageHeight: imageElement.naturalHeight,
       });
 
       startRectangle(point.x, point.y);
@@ -138,6 +140,8 @@ function ImageEditor({ image }: ImageViewerProps) {
         y: canvasY,
         viewport,
         scale,
+        imageWidth: imageElement.naturalWidth,
+        imageHeight: imageElement.naturalHeight,
       });
 
       updateRectangle(point.x, point.y);

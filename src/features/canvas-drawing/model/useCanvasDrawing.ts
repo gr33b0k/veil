@@ -27,6 +27,11 @@ export function useCanvasDrawing() {
   function finishRectangle() {
     if (!drawingRectangle) return;
 
+    if (drawingRectangle.width === 0 || drawingRectangle.height === 0) {
+      setDrawingRectangle(null);
+      return;
+    }
+
     setRectangles((current) => [...current, drawingRectangle]);
     setDrawingRectangle(null);
   }
