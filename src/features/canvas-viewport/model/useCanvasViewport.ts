@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { zoomAtPoint, zoomIn, zoomOut } from "../lib/zoom";
+import type { Viewport } from "./types";
+import { getImageScale } from "../lib/getImageScale";
 
 type UseCanvasViewportProps = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -10,7 +12,7 @@ export function useCanvasViewport({
   canvasRef,
   image,
 }: UseCanvasViewportProps) {
-  const [viewport, setViewport] = useState({
+  const [viewport, setViewport] = useState<Viewport>({
     zoom: 1,
     x: 0,
     y: 0,
@@ -68,11 +70,11 @@ export function useCanvasViewport({
 
     const rect = canvas.getBoundingClientRect();
 
-    const padding = 40;
-
-    const scale = Math.min(
-      (rect.width - padding * 2) / image.naturalWidth,
-      (rect.height - padding * 2) / image.naturalHeight,
+    const scale = getImageScale(
+      rect.width,
+      rect.height,
+      image.naturalWidth,
+      image.naturalHeight,
     );
 
     const width = image.naturalWidth * scale;

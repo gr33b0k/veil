@@ -1,16 +1,21 @@
-type Viewport = {
-  zoom: number;
-  x: number;
-  y: number;
-};
+import { getImageScale, type Rectangle, type Viewport } from "@/features";
 
 type DrawCanvasProps = {
   canvas: HTMLCanvasElement;
   image: HTMLImageElement;
   viewport: Viewport;
+
+  rectangles: Rectangle[];
+  drawingRectangle: Rectangle | null;
 };
 
-export function drawCanvas({ canvas, image, viewport }: DrawCanvasProps) {
+export function drawCanvas({
+  canvas,
+  image,
+  viewport,
+  rectangles,
+  drawingRectangle,
+}: DrawCanvasProps) {
   const ctx = canvas.getContext("2d");
 
   if (!ctx) return;
@@ -24,17 +29,45 @@ export function drawCanvas({ canvas, image, viewport }: DrawCanvasProps) {
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  const padding = 40;
-
-  const scale = Math.min(
-    (rect.width - padding * 2) / image.naturalWidth,
-    (rect.height - padding * 2) / image.naturalHeight,
+  const scale = getImageScale(
+    rect.width,
+    rect.height,
+    image.naturalWidth,
+    image.naturalHeight,
   );
-
-  const width = image.naturalWidth * scale * viewport.zoom;
-  const height = image.naturalHeight * scale * viewport.zoom;
 
   ctx.clearRect(0, 0, rect.width, rect.height);
 
-  ctx.drawImage(image, viewport.x, viewport.y, width, height);
+  ctx.save();
+
+  ctx.translate(viewport.x, viewport.y);
+  ctx.scale(scale * viewport.zoom, scale * viewport.zoom);
+
+  ctx.drawImage(image, 0, 0);
+
+  function blurRectangle(rect: Rectangle) {
+    if (!ctx) return;
+
+    const { x, y, width, height } = rect;
+
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.rect(x, y, width, height);
+    ctx.clip();
+
+    ctx.filter = "blur(20px)";
+
+    ctx.drawImage(image, 0, 0);
+
+    ctx.restore();
+  }
+
+  rectangles.forEach(blurRectangle);
+
+  if (drawingRectangle) {
+    blurRectangle(drawingRectangle);
+  }
+
+  ctx.restore();
 }
