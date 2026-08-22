@@ -11,4 +11,9 @@ export {
 
 export { ToolSelector, type Tool } from "./canvas-tools";
 
-export { useCanvasDrawing, type Rectangle, type Point } from "./canvas-drawing";
+export {
+  useCanvasDrawing,
+  type Rectangle,
+  type Point,
+  type Drawing,
+} from "./canvas-drawing";

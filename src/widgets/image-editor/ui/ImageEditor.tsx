@@ -57,9 +57,8 @@ function ImageEditor({ image }: ImageViewerProps) {
     });
 
   const {
-    rectangles,
-    drawingRectangle,
-    brushStrokes,
+    drawings,
+    drawingRect,
     drawingBrush,
     startRectangle,
     updateRectangle,
@@ -67,7 +66,33 @@ function ImageEditor({ image }: ImageViewerProps) {
     startBrush,
     updateBrush,
     finishBrush,
+    undo,
+    redo,
   } = useCanvasDrawing();
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const modifier = e.ctrlKey || e.metaKey;
+
+      if (!modifier) return;
+
+      if (e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        undo();
+      }
+
+      if (e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        redo();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   useEffect(() => {
     if (!imageElement) return;
@@ -82,19 +107,11 @@ function ImageEditor({ image }: ImageViewerProps) {
       offscreenCanvas,
       image: imageElement,
       viewport,
-      rectangles,
-      drawingRectangle,
-      brushStrokes,
+      drawings,
+      drawingRect,
       drawingBrush,
     });
-  }, [
-    imageElement,
-    viewport,
-    rectangles,
-    drawingRectangle,
-    brushStrokes,
-    drawingBrush,
-  ]);
+  }, [imageElement, viewport, drawings, drawingRect, drawingBrush]);
 
   function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
     if (!imageElement) return;
@@ -171,7 +188,7 @@ function ImageEditor({ image }: ImageViewerProps) {
     }
 
     if (tool === "rectangle") {
-      if (!drawingRectangle) return;
+      if (!drawingRect) return;
 
       const rect = e.currentTarget.getBoundingClientRect();
 

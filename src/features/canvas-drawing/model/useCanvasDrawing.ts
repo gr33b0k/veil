@@ -1,26 +1,31 @@
 import { useRef, useState } from "react";
-import type { Point, Rectangle } from "./types";
+import type { Point, Rectangle, Drawing } from "./types";
 
 export function useCanvasDrawing() {
-  const [rectangles, setRectangles] = useState<Rectangle[]>([]);
+  const [history, setHistory] = useState({
+    drawings: [] as Drawing[],
+    redoStack: [] as Drawing[],
+  });
 
-  const [drawingRectangle, setDrawingRectangle] = useState<Rectangle | null>(
-    null,
-  );
-
-  const [brushStrokes, setBrushStrokes] = useState<Point[][]>([]);
-
+  const [drawingRect, setDrawingRect] = useState<Rectangle | null>(null);
   const [drawingBrush, setDrawingBrush] = useState<Point[]>([]);
 
   const startPoint = useRef<Point>({ x: 0, y: 0 });
 
+  function addDrawing(drawing: Drawing) {
+    setHistory((current) => ({
+      drawings: [...current.drawings, drawing],
+      redoStack: [],
+    }));
+  }
+
   function startRectangle(x: number, y: number) {
     startPoint.current = { x, y };
-    setDrawingRectangle({ x, y, width: 0, height: 0 });
+    setDrawingRect({ x, y, width: 0, height: 0 });
   }
 
   function updateRectangle(x: number, y: number) {
-    setDrawingRectangle({
+    setDrawingRect({
       x: startPoint.current.x,
       y: startPoint.current.y,
       width: x - startPoint.current.x,
@@ -29,15 +34,16 @@ export function useCanvasDrawing() {
   }
 
   function finishRectangle() {
-    if (!drawingRectangle) return;
+    if (!drawingRect) return;
 
-    if (drawingRectangle.width === 0 || drawingRectangle.height === 0) {
-      setDrawingRectangle(null);
+    if (drawingRect.width === 0 || drawingRect.height === 0) {
+      setDrawingRect(null);
       return;
     }
 
-    setRectangles((current) => [...current, drawingRectangle]);
-    setDrawingRectangle(null);
+    addDrawing({ type: "rectangle", rectangle: drawingRect });
+
+    setDrawingRect(null);
   }
 
   function startBrush(x: number, y: number) {
@@ -51,14 +57,40 @@ export function useCanvasDrawing() {
   function finishBrush() {
     if (drawingBrush.length === 0) return;
 
-    setBrushStrokes((current) => [...current, drawingBrush]);
+    addDrawing({ type: "brush", points: drawingBrush });
+
     setDrawingBrush([]);
   }
 
+  function undo() {
+    setHistory((current) => {
+      if (current.drawings.length === 0) return current;
+
+      const lastDrawing = current.drawings[current.drawings.length - 1];
+
+      return {
+        drawings: current.drawings.slice(0, -1),
+        redoStack: [...current.redoStack, lastDrawing],
+      };
+    });
+  }
+
+  function redo() {
+    setHistory((current) => {
+      if (current.redoStack.length === 0) return current;
+
+      const drawing = current.redoStack[current.redoStack.length - 1];
+
+      return {
+        drawings: [...current.drawings, drawing],
+        redoStack: current.redoStack.slice(0, -1),
+      };
+    });
+  }
+
   return {
-    rectangles,
-    drawingRectangle,
-    brushStrokes,
+    drawings: history.drawings,
+    drawingRect,
     drawingBrush,
     startRectangle,
     updateRectangle,
@@ -66,5 +98,7 @@ export function useCanvasDrawing() {
     startBrush,
     updateBrush,
     finishBrush,
+    undo,
+    redo,
   };
 }

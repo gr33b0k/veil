@@ -1,5 +1,5 @@
-import { getImageScale, type Rectangle, type Viewport } from "@/features";
-import type { Point } from "@/features";
+import { getImageScale } from "@/features";
+import type { Viewport, Rectangle, Point, Drawing } from "@/features";
 
 type DrawCanvasProps = {
   canvas: HTMLCanvasElement;
@@ -7,10 +7,9 @@ type DrawCanvasProps = {
   image: HTMLImageElement;
   viewport: Viewport;
 
-  rectangles: Rectangle[];
-  drawingRectangle: Rectangle | null;
+  drawings: Drawing[];
 
-  brushStrokes: Point[][];
+  drawingRect: Rectangle | null;
   drawingBrush: Point[];
 };
 
@@ -19,9 +18,8 @@ export function drawCanvas({
   offscreenCanvas,
   image,
   viewport,
-  rectangles,
-  drawingRectangle,
-  brushStrokes,
+  drawings,
+  drawingRect,
   drawingBrush,
 }: DrawCanvasProps) {
   const ctx = canvas.getContext("2d");
@@ -100,7 +98,11 @@ export function drawCanvas({
     offCtx.stroke();
   }
 
-  brushStrokes.forEach(drawBrushPath);
+  for (const drawing of drawings) {
+    if (drawing.type === "brush") {
+      drawBrushPath(drawing.points);
+    }
+  }
 
   if (drawingBrush.length > 0) {
     drawBrushPath(drawingBrush);
@@ -127,11 +129,15 @@ export function drawCanvas({
   ctx.translate(viewport.x, viewport.y);
   ctx.scale(scale * viewport.zoom, scale * viewport.zoom);
 
-  if (drawingRectangle) {
-    drawRectangle(drawingRectangle);
+  for (const drawing of drawings) {
+    if (drawing.type === "rectangle") {
+      drawRectangle(drawing.rectangle);
+    }
   }
 
-  rectangles.forEach(drawRectangle);
+  if (drawingRect) {
+    drawRectangle(drawingRect);
+  }
 
   ctx.restore();
 }
