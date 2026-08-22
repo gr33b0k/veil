@@ -23,6 +23,11 @@ function ImageEditor({ image }: ImageViewerProps) {
   const [tool, setTool] = useState<Tool>("cursor");
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  if (!offscreenCanvasRef.current) {
+    offscreenCanvasRef.current = document.createElement("canvas");
+  }
 
   const [imageElement, setImageElement] = useState<HTMLImageElement | null>(
     null,
@@ -47,32 +52,49 @@ function ImageEditor({ image }: ImageViewerProps) {
   const { viewport, startPan, movePan, stopPan, handleZoomChange, handleFit } =
     useCanvasViewport({
       canvasRef,
+      offscreenCanvasRef,
       image: imageElement,
     });
 
   const {
     rectangles,
     drawingRectangle,
+    brushStrokes,
+    drawingBrush,
     startRectangle,
     updateRectangle,
     finishRectangle,
+    startBrush,
+    updateBrush,
+    finishBrush,
   } = useCanvasDrawing();
 
   useEffect(() => {
     if (!imageElement) return;
 
     const canvas = canvasRef.current;
+    const offscreenCanvas = offscreenCanvasRef.current;
 
-    if (!canvas) return;
+    if (!canvas || !offscreenCanvas) return;
 
     drawCanvas({
       canvas,
+      offscreenCanvas,
       image: imageElement,
       viewport,
       rectangles,
       drawingRectangle,
+      brushStrokes,
+      drawingBrush,
     });
-  }, [imageElement, viewport, rectangles, drawingRectangle]);
+  }, [
+    imageElement,
+    viewport,
+    rectangles,
+    drawingRectangle,
+    brushStrokes,
+    drawingBrush,
+  ]);
 
   function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
     if (!imageElement) return;
@@ -111,6 +133,34 @@ function ImageEditor({ image }: ImageViewerProps) {
       startRectangle(point.x, point.y);
       e.currentTarget.setPointerCapture(e.pointerId);
     }
+
+    if (tool === "brush") {
+      if (e.button !== 0) return;
+
+      const rect = e.currentTarget.getBoundingClientRect();
+
+      const canvasX = e.clientX - rect.left;
+      const canvasY = e.clientY - rect.top;
+
+      const scale = getImageScale(
+        rect.width,
+        rect.height,
+        imageElement.naturalWidth,
+        imageElement.naturalHeight,
+      );
+
+      const point = screenToImage({
+        x: canvasX,
+        y: canvasY,
+        viewport,
+        scale,
+        imageWidth: imageElement.naturalWidth,
+        imageHeight: imageElement.naturalHeight,
+      });
+
+      startBrush(point.x, point.y);
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
   }
 
   function handlePointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
@@ -146,6 +196,33 @@ function ImageEditor({ image }: ImageViewerProps) {
 
       updateRectangle(point.x, point.y);
     }
+
+    if (tool === "brush") {
+      if (drawingBrush.length === 0) return;
+
+      const rect = e.currentTarget.getBoundingClientRect();
+
+      const canvasX = e.clientX - rect.left;
+      const canvasY = e.clientY - rect.top;
+
+      const scale = getImageScale(
+        rect.width,
+        rect.height,
+        imageElement.naturalWidth,
+        imageElement.naturalHeight,
+      );
+
+      const point = screenToImage({
+        x: canvasX,
+        y: canvasY,
+        viewport,
+        scale,
+        imageWidth: imageElement.naturalWidth,
+        imageHeight: imageElement.naturalHeight,
+      });
+
+      updateBrush(point.x, point.y);
+    }
   }
 
   function handlePointerUp(e: React.PointerEvent<HTMLCanvasElement>) {
@@ -156,6 +233,11 @@ function ImageEditor({ image }: ImageViewerProps) {
 
     if (tool === "rectangle") {
       finishRectangle();
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+
+    if (tool === "brush") {
+      finishBrush();
       e.currentTarget.releasePointerCapture(e.pointerId);
     }
   }

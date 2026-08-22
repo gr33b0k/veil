@@ -5,11 +5,13 @@ import { getImageScale } from "../lib/getImageScale";
 
 type UseCanvasViewportProps = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
+  offscreenCanvasRef: React.RefObject<HTMLCanvasElement | null>;
   image: HTMLImageElement | null;
 };
 
 export function useCanvasViewport({
   canvasRef,
+  offscreenCanvasRef,
   image,
 }: UseCanvasViewportProps) {
   const [viewport, setViewport] = useState<Viewport>({
@@ -95,7 +97,21 @@ export function useCanvasViewport({
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const offCanvas = offscreenCanvasRef.current;
+
+    if (!canvas || !offCanvas) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      offCanvas.width = canvas.width;
+      offCanvas.height = canvas.height;
+    });
+
+    resizeObserver.observe(canvas);
 
     function handleWheel(e: WheelEvent) {
       e.preventDefault();
@@ -132,6 +148,7 @@ export function useCanvasViewport({
 
     return () => {
       canvas.removeEventListener("wheel", handleWheel);
+      resizeObserver.disconnect();
     };
   }, []);
 

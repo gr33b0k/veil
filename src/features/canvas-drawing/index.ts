@@ -1,2 +1,2 @@
 export { useCanvasDrawing } from "./model/useCanvasDrawing";
-export { type Rectangle } from "./model/types";
+export { type Rectangle, type Point } from "./model/types";

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { Rectangle } from "./types";
+import type { Point, Rectangle } from "./types";
 
 export function useCanvasDrawing() {
   const [rectangles, setRectangles] = useState<Rectangle[]>([]);
@@ -8,7 +8,11 @@ export function useCanvasDrawing() {
     null,
   );
 
-  const startPoint = useRef({ x: 0, y: 0 });
+  const [brushStrokes, setBrushStrokes] = useState<Point[][]>([]);
+
+  const [drawingBrush, setDrawingBrush] = useState<Point[]>([]);
+
+  const startPoint = useRef<Point>({ x: 0, y: 0 });
 
   function startRectangle(x: number, y: number) {
     startPoint.current = { x, y };
@@ -36,11 +40,31 @@ export function useCanvasDrawing() {
     setDrawingRectangle(null);
   }
 
+  function startBrush(x: number, y: number) {
+    setDrawingBrush([{ x, y }]);
+  }
+
+  function updateBrush(x: number, y: number) {
+    setDrawingBrush((current) => [...current, { x, y }]);
+  }
+
+  function finishBrush() {
+    if (drawingBrush.length === 0) return;
+
+    setBrushStrokes((current) => [...current, drawingBrush]);
+    setDrawingBrush([]);
+  }
+
   return {
     rectangles,
     drawingRectangle,
+    brushStrokes,
+    drawingBrush,
     startRectangle,
     updateRectangle,
     finishRectangle,
+    startBrush,
+    updateBrush,
+    finishBrush,
   };
 }
