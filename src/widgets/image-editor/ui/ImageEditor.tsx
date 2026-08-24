@@ -49,12 +49,19 @@ function ImageEditor({ image }: ImageViewerProps) {
     };
   }, [image]);
 
-  const { viewport, startPan, movePan, stopPan, handleZoomChange, handleFit } =
-    useCanvasViewport({
-      canvasRef,
-      offscreenCanvasRef,
-      image: imageElement,
-    });
+  const {
+    viewport,
+    isPanning,
+    startPan,
+    movePan,
+    stopPan,
+    handleZoomChange,
+    handleFit,
+  } = useCanvasViewport({
+    canvasRef,
+    offscreenCanvasRef,
+    image: imageElement,
+  });
 
   const {
     drawings,
@@ -116,11 +123,18 @@ function ImageEditor({ image }: ImageViewerProps) {
   function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
     if (!imageElement) return;
 
-    if (tool === "cursor") {
-      if (e.button === 2) return;
-      startPan(e.clientX, e.clientY);
+    if (e.button === 2) return;
 
+    if (e.button === 1) {
+      startPan(e.clientX, e.clientY);
       e.currentTarget.setPointerCapture(e.pointerId);
+      return;
+    }
+
+    if (tool === "cursor" && e.button === 0) {
+      startPan(e.clientX, e.clientY);
+      e.currentTarget.setPointerCapture(e.pointerId);
+      return;
     }
 
     if (tool === "rectangle") {
@@ -149,6 +163,7 @@ function ImageEditor({ image }: ImageViewerProps) {
 
       startRectangle(point.x, point.y);
       e.currentTarget.setPointerCapture(e.pointerId);
+      return;
     }
 
     if (tool === "brush") {
@@ -183,8 +198,9 @@ function ImageEditor({ image }: ImageViewerProps) {
   function handlePointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
     if (!imageElement) return;
 
-    if (tool === "cursor") {
+    if (isPanning) {
       movePan(e.clientX, e.clientY);
+      return;
     }
 
     if (tool === "rectangle") {
@@ -212,6 +228,7 @@ function ImageEditor({ image }: ImageViewerProps) {
       });
 
       updateRectangle(point.x, point.y);
+      return;
     }
 
     if (tool === "brush") {
@@ -243,14 +260,16 @@ function ImageEditor({ image }: ImageViewerProps) {
   }
 
   function handlePointerUp(e: React.PointerEvent<HTMLCanvasElement>) {
-    if (tool === "cursor") {
+    if (isPanning) {
       stopPan();
       e.currentTarget.releasePointerCapture(e.pointerId);
+      return;
     }
 
     if (tool === "rectangle") {
       finishRectangle();
       e.currentTarget.releasePointerCapture(e.pointerId);
+      return;
     }
 
     if (tool === "brush") {

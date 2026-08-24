@@ -154,6 +154,7 @@ export function useCanvasViewport({
 
   return {
     viewport,
+    isPanning,
     startPan,
     movePan,
     stopPan,
