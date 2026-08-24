@@ -5,5 +5,8 @@ export { useCanvasViewport } from "./model/useCanvasViewport";
 
 export { type Viewport } from "./model/types";
 
-export { getImageScale } from "./lib/getImageScale";
-export { screenToImage } from "./lib/coordinates";
+export {
+  getImageScale,
+  screenToImage,
+  getCanvasPoint,
+} from "./lib/coordinates";

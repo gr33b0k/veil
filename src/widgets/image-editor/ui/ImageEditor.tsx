@@ -1,6 +1,5 @@
 import {
-  getImageScale,
-  screenToImage,
+  getCanvasPoint,
   useCanvasDrawing,
   useCanvasViewport,
   type Tool,
@@ -121,77 +120,31 @@ function ImageEditor({ image }: ImageViewerProps) {
   }, [imageElement, viewport, drawings, drawingRect, drawingBrush]);
 
   function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
-    if (!imageElement) return;
+    if (!imageElement || e.button === 2) return;
 
-    if (e.button === 2) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
 
-    if (e.button === 1) {
+    if (e.button === 1 || (tool === "cursor" && e.button === 0)) {
       startPan(e.clientX, e.clientY);
-      e.currentTarget.setPointerCapture(e.pointerId);
       return;
     }
 
-    if (tool === "cursor" && e.button === 0) {
-      startPan(e.clientX, e.clientY);
-      e.currentTarget.setPointerCapture(e.pointerId);
-      return;
-    }
+    const point = getCanvasPoint({
+      x: e.clientX,
+      y: e.clientY,
+      canvas: e.currentTarget,
+      viewport,
+      imageWidth: imageElement.naturalWidth,
+      imageHeight: imageElement.naturalHeight,
+    });
 
-    if (tool === "rectangle") {
-      if (e.button !== 0) return;
-
-      const rect = e.currentTarget.getBoundingClientRect();
-
-      const canvasX = e.clientX - rect.left;
-      const canvasY = e.clientY - rect.top;
-
-      const scale = getImageScale(
-        rect.width,
-        rect.height,
-        imageElement.naturalWidth,
-        imageElement.naturalHeight,
-      );
-
-      const point = screenToImage({
-        x: canvasX,
-        y: canvasY,
-        viewport,
-        scale,
-        imageWidth: imageElement.naturalWidth,
-        imageHeight: imageElement.naturalHeight,
-      });
-
-      startRectangle(point.x, point.y);
-      e.currentTarget.setPointerCapture(e.pointerId);
-      return;
-    }
-
-    if (tool === "brush") {
-      if (e.button !== 0) return;
-
-      const rect = e.currentTarget.getBoundingClientRect();
-
-      const canvasX = e.clientX - rect.left;
-      const canvasY = e.clientY - rect.top;
-
-      const scale = getImageScale(
-        rect.width,
-        rect.height,
-        imageElement.naturalWidth,
-        imageElement.naturalHeight,
-      );
-
-      const point = screenToImage({
-        x: canvasX,
-        y: canvasY,
-        viewport,
-        scale,
-        imageWidth: imageElement.naturalWidth,
-        imageHeight: imageElement.naturalHeight,
-      });
-
-      startBrush(point.x, point.y);
-      e.currentTarget.setPointerCapture(e.pointerId);
+    switch (tool) {
+      case "rectangle":
+        startRectangle(point.x, point.y);
+        break;
+      case "brush":
+        startBrush(point.x, point.y);
+        break;
     }
   }
 
@@ -203,79 +156,46 @@ function ImageEditor({ image }: ImageViewerProps) {
       return;
     }
 
-    if (tool === "rectangle") {
-      if (!drawingRect) return;
+    const point = getCanvasPoint({
+      x: e.clientX,
+      y: e.clientY,
+      canvas: e.currentTarget,
+      viewport,
+      imageWidth: imageElement.naturalWidth,
+      imageHeight: imageElement.naturalHeight,
+    });
 
-      const rect = e.currentTarget.getBoundingClientRect();
+    switch (tool) {
+      case "rectangle":
+        if (!drawingRect) return;
 
-      const canvasX = e.clientX - rect.left;
-      const canvasY = e.clientY - rect.top;
+        updateRectangle(point.x, point.y);
 
-      const scale = getImageScale(
-        rect.width,
-        rect.height,
-        imageElement.naturalWidth,
-        imageElement.naturalHeight,
-      );
+        break;
+      case "brush":
+        if (drawingBrush.length === 0) return;
 
-      const point = screenToImage({
-        x: canvasX,
-        y: canvasY,
-        viewport,
-        scale,
-        imageWidth: imageElement.naturalWidth,
-        imageHeight: imageElement.naturalHeight,
-      });
+        updateBrush(point.x, point.y);
 
-      updateRectangle(point.x, point.y);
-      return;
-    }
-
-    if (tool === "brush") {
-      if (drawingBrush.length === 0) return;
-
-      const rect = e.currentTarget.getBoundingClientRect();
-
-      const canvasX = e.clientX - rect.left;
-      const canvasY = e.clientY - rect.top;
-
-      const scale = getImageScale(
-        rect.width,
-        rect.height,
-        imageElement.naturalWidth,
-        imageElement.naturalHeight,
-      );
-
-      const point = screenToImage({
-        x: canvasX,
-        y: canvasY,
-        viewport,
-        scale,
-        imageWidth: imageElement.naturalWidth,
-        imageHeight: imageElement.naturalHeight,
-      });
-
-      updateBrush(point.x, point.y);
+        break;
     }
   }
 
   function handlePointerUp(e: React.PointerEvent<HTMLCanvasElement>) {
     if (isPanning) {
       stopPan();
-      e.currentTarget.releasePointerCapture(e.pointerId);
-      return;
+    } else {
+      switch (tool) {
+        case "rectangle":
+          finishRectangle();
+          break;
+        case "brush":
+          finishBrush();
+          break;
+      }
     }
 
-    if (tool === "rectangle") {
-      finishRectangle();
-      e.currentTarget.releasePointerCapture(e.pointerId);
-      return;
-    }
-
-    if (tool === "brush") {
-      finishBrush();
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    }
+    e.currentTarget.releasePointerCapture(e.pointerId);
   }
 
   return (

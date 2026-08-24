@@ -6,6 +6,7 @@ export {
   useCanvasViewport,
   getImageScale,
   screenToImage,
+  getCanvasPoint,
   type Viewport,
 } from "./canvas-viewport";
 

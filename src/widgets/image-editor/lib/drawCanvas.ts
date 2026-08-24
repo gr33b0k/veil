@@ -31,12 +31,12 @@ export function drawCanvas({
 
   const dpr = window.devicePixelRatio || 1;
 
-  const scale = getImageScale(
-    rect.width,
-    rect.height,
-    image.naturalWidth,
-    image.naturalHeight,
-  );
+  const scale = getImageScale({
+    canvasWidth: rect.width,
+    canvasHeight: rect.height,
+    imageWidth: image.naturalWidth,
+    imageHeight: image.naturalHeight,
+  });
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 

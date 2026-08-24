@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { zoomAtPoint, zoomIn, zoomOut } from "../lib/zoom";
 import type { Viewport } from "./types";
-import { getImageScale } from "../lib/getImageScale";
+import { getImageScale } from "../lib/coordinates";
 
 type UseCanvasViewportProps = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -72,12 +72,12 @@ export function useCanvasViewport({
 
     const rect = canvas.getBoundingClientRect();
 
-    const scale = getImageScale(
-      rect.width,
-      rect.height,
-      image.naturalWidth,
-      image.naturalHeight,
-    );
+    const scale = getImageScale({
+      canvasWidth: rect.width,
+      canvasHeight: rect.height,
+      imageWidth: image.naturalWidth,
+      imageHeight: image.naturalHeight,
+    });
 
     const width = image.naturalWidth * scale;
     const height = image.naturalHeight * scale;
