@@ -29,6 +29,8 @@ function ImageEditor({ image }: ImageViewerProps) {
     offscreenCanvasRef.current = document.createElement("canvas");
   }
 
+  const animationFrameRef = useRef<number | null>(null);
+
   const [imageElement, setImageElement] = useState<HTMLImageElement | null>(
     null,
   );
@@ -115,25 +117,36 @@ function ImageEditor({ image }: ImageViewerProps) {
     };
   }, [selectedDrawingId]);
 
-  useEffect(() => {
-    console.log(drawings);
-    if (!imageElement) return;
+  function scheduleCanvasDraw() {
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
 
-    const canvas = canvasRef.current;
-    const offscreenCanvas = offscreenCanvasRef.current;
+    animationFrameRef.current = requestAnimationFrame(() => {
+      animationFrameRef.current = null;
 
-    if (!canvas || !offscreenCanvas) return;
+      if (!imageElement) return;
 
-    drawCanvas({
-      canvas,
-      offscreenCanvas,
-      image: imageElement,
-      viewport,
-      drawings,
-      selectedDrawingId,
-      drawingRect,
-      drawingBrush,
+      const canvas = canvasRef.current;
+      const offscreenCanvas = offscreenCanvasRef.current;
+
+      if (!canvas || !offscreenCanvas) return;
+
+      drawCanvas({
+        canvas,
+        offscreenCanvas,
+        image: imageElement,
+        viewport,
+        drawings,
+        selectedDrawingId,
+        drawingRect,
+        drawingBrush,
+      });
     });
+  }
+
+  useEffect(() => {
+    scheduleCanvasDraw();
   }, [
     imageElement,
     viewport,
