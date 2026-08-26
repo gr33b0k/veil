@@ -1,4 +1,5 @@
 import {
+  findDrawingAtPoint,
   getCanvasPoint,
   useCanvasDrawing,
   useCanvasViewport,
@@ -29,6 +30,10 @@ function ImageEditor({ image }: ImageViewerProps) {
   }
 
   const [imageElement, setImageElement] = useState<HTMLImageElement | null>(
+    null,
+  );
+
+  const [selectedDrawingId, setSelectedDrawingId] = useState<string | null>(
     null,
   );
 
@@ -66,18 +71,28 @@ function ImageEditor({ image }: ImageViewerProps) {
     drawings,
     drawingRect,
     drawingBrush,
+
     startRectangle,
     updateRectangle,
     finishRectangle,
+
     startBrush,
     updateBrush,
     finishBrush,
+
     undo,
     redo,
+
+    deleteDrawing,
   } = useCanvasDrawing();
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Delete" && selectedDrawingId) {
+        deleteDrawing(selectedDrawingId);
+        setSelectedDrawingId(null);
+      }
+
       const modifier = e.ctrlKey || e.metaKey;
 
       if (!modifier) return;
@@ -98,9 +113,10 @@ function ImageEditor({ image }: ImageViewerProps) {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [selectedDrawingId]);
 
   useEffect(() => {
+    console.log(drawings);
     if (!imageElement) return;
 
     const canvas = canvasRef.current;
@@ -114,17 +130,25 @@ function ImageEditor({ image }: ImageViewerProps) {
       image: imageElement,
       viewport,
       drawings,
+      selectedDrawingId,
       drawingRect,
       drawingBrush,
     });
-  }, [imageElement, viewport, drawings, drawingRect, drawingBrush]);
+  }, [
+    imageElement,
+    viewport,
+    drawings,
+    selectedDrawingId,
+    drawingRect,
+    drawingBrush,
+  ]);
 
   function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
     if (!imageElement || e.button === 2) return;
 
     e.currentTarget.setPointerCapture(e.pointerId);
 
-    if (e.button === 1 || (tool === "cursor" && e.button === 0)) {
+    if (e.button === 1) {
       startPan(e.clientX, e.clientY);
       return;
     }
@@ -139,6 +163,10 @@ function ImageEditor({ image }: ImageViewerProps) {
     });
 
     switch (tool) {
+      case "cursor":
+        const selectedDrawing = findDrawingAtPoint(drawings, point);
+        setSelectedDrawingId(selectedDrawing?.id ?? null);
+        break;
       case "rectangle":
         startRectangle(point.x, point.y);
         break;

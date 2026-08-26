@@ -12,10 +12,12 @@ export type Point = {
 
 export type Drawing =
   | {
+      id: string;
       type: "rectangle";
       rectangle: Rectangle;
     }
   | {
+      id: string;
       type: "brush";
       points: Point[];
     };

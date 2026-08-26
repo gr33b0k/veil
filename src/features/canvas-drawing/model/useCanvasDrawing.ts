@@ -19,6 +19,23 @@ export function useCanvasDrawing() {
     }));
   }
 
+  function deleteDrawing(drawingId: string) {
+    setHistory((current) => {
+      const drawing = current.drawings.find(
+        (drawing) => drawingId === drawing.id,
+      );
+
+      if (!drawing) return current;
+
+      return {
+        drawings: current.drawings.filter(
+          (drawing) => drawing.id !== drawingId,
+        ),
+        redoStack: [...current.redoStack, drawing],
+      };
+    });
+  }
+
   function startRectangle(x: number, y: number) {
     startPoint.current = { x, y };
     setDrawingRect({ x, y, width: 0, height: 0 });
@@ -41,7 +58,11 @@ export function useCanvasDrawing() {
       return;
     }
 
-    addDrawing({ type: "rectangle", rectangle: drawingRect });
+    addDrawing({
+      id: crypto.randomUUID(),
+      type: "rectangle",
+      rectangle: drawingRect,
+    });
 
     setDrawingRect(null);
   }
@@ -57,7 +78,11 @@ export function useCanvasDrawing() {
   function finishBrush() {
     if (drawingBrush.length === 0) return;
 
-    addDrawing({ type: "brush", points: drawingBrush });
+    addDrawing({
+      id: crypto.randomUUID(),
+      type: "brush",
+      points: drawingBrush,
+    });
 
     setDrawingBrush([]);
   }
@@ -92,13 +117,18 @@ export function useCanvasDrawing() {
     drawings: history.drawings,
     drawingRect,
     drawingBrush,
+
     startRectangle,
     updateRectangle,
     finishRectangle,
+
     startBrush,
     updateBrush,
     finishBrush,
+
     undo,
     redo,
+
+    deleteDrawing,
   };
 }

@@ -18,3 +18,5 @@ export {
   type Point,
   type Drawing,
 } from "./canvas-drawing";
+
+export { findDrawingAtPoint } from "./canvas-selection";
