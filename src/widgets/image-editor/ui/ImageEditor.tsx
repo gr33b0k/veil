@@ -7,7 +7,7 @@ import {
 } from "@/features";
 import { useEffect, useRef, useState } from "react";
 import Toolbar from "./Toolbar";
-import { drawCanvas } from "../lib/drawCanvas";
+import { useCanvasRenderer } from "../model/useCanvasRenderer";
 
 type ImageViewerProps = {
   image: File;
@@ -28,8 +28,6 @@ function ImageEditor({ image }: ImageViewerProps) {
   if (!offscreenCanvasRef.current) {
     offscreenCanvasRef.current = document.createElement("canvas");
   }
-
-  const animationFrameRef = useRef<number | null>(null);
 
   const [imageElement, setImageElement] = useState<HTMLImageElement | null>(
     null,
@@ -57,10 +55,12 @@ function ImageEditor({ image }: ImageViewerProps) {
 
   const {
     viewport,
+
     isPanning,
     startPan,
     movePan,
     stopPan,
+
     handleZoomChange,
     handleFit,
   } = useCanvasViewport({
@@ -87,6 +87,17 @@ function ImageEditor({ image }: ImageViewerProps) {
 
     deleteDrawing,
   } = useCanvasDrawing();
+
+  const { scheduleDraw } = useCanvasRenderer({
+    canvasRef,
+    offscreenCanvasRef,
+    imageElement,
+    viewport,
+    drawings,
+    selectedDrawingId,
+    drawingRect,
+    drawingBrush,
+  });
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -116,38 +127,6 @@ function ImageEditor({ image }: ImageViewerProps) {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedDrawingId]);
-
-  function scheduleCanvasDraw() {
-    if (animationFrameRef.current !== null) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-
-    animationFrameRef.current = requestAnimationFrame(() => {
-      animationFrameRef.current = null;
-
-      if (!imageElement) return;
-
-      const canvas = canvasRef.current;
-      const offscreenCanvas = offscreenCanvasRef.current;
-
-      if (!canvas || !offscreenCanvas) return;
-
-      drawCanvas({
-        canvas,
-        offscreenCanvas,
-        image: imageElement,
-        viewport,
-        drawings,
-        selectedDrawingId,
-        drawingRect: drawingRect.current,
-        drawingBrush: drawingBrush.current,
-      });
-    });
-  }
-
-  useEffect(() => {
-    scheduleCanvasDraw();
-  }, [imageElement, viewport, drawings, selectedDrawingId]);
 
   function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
     if (!imageElement || e.button === 2) return;
@@ -204,14 +183,14 @@ function ImageEditor({ image }: ImageViewerProps) {
         if (!drawingRect.current) return;
 
         updateRectangle(point.x, point.y);
-        scheduleCanvasDraw();
+        scheduleDraw();
 
         break;
       case "brush":
         if (drawingBrush.current.length === 0) return;
 
         updateBrush(point.x, point.y);
-        scheduleCanvasDraw();
+        scheduleDraw();
 
         break;
     }
