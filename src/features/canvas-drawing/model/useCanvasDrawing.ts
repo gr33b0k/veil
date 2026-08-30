@@ -7,10 +7,9 @@ export function useCanvasDrawing() {
     redoStack: [] as Drawing[],
   });
 
-  const [drawingRect, setDrawingRect] = useState<Rectangle | null>(null);
-  const [drawingBrush, setDrawingBrush] = useState<Point[]>([]);
-
-  const startPoint = useRef<Point>({ x: 0, y: 0 });
+  const rectStart = useRef<Point>({ x: 0, y: 0 });
+  const drawingRect = useRef<Rectangle | null>(null);
+  const drawingBrush = useRef<Point[]>([]);
 
   function addDrawing(drawing: Drawing) {
     setHistory((current) => ({
@@ -37,54 +36,54 @@ export function useCanvasDrawing() {
   }
 
   function startRectangle(x: number, y: number) {
-    startPoint.current = { x, y };
-    setDrawingRect({ x, y, width: 0, height: 0 });
+    rectStart.current = { x, y };
+    drawingRect.current = { x, y, width: 0, height: 0 };
   }
 
   function updateRectangle(x: number, y: number) {
-    setDrawingRect({
-      x: startPoint.current.x,
-      y: startPoint.current.y,
-      width: x - startPoint.current.x,
-      height: y - startPoint.current.y,
-    });
+    drawingRect.current = {
+      x: rectStart.current.x,
+      y: rectStart.current.y,
+      width: x - rectStart.current.x,
+      height: y - rectStart.current.y,
+    };
   }
 
   function finishRectangle() {
-    if (!drawingRect) return;
+    const rectangle = drawingRect.current;
+    if (!rectangle) return;
 
-    if (drawingRect.width === 0 || drawingRect.height === 0) {
-      setDrawingRect(null);
-      return;
-    }
+    drawingRect.current = null;
+
+    if (rectangle.width === 0 || rectangle.height === 0) return;
 
     addDrawing({
       id: crypto.randomUUID(),
       type: "rectangle",
-      rectangle: drawingRect,
+      rectangle,
     });
-
-    setDrawingRect(null);
   }
 
   function startBrush(x: number, y: number) {
-    setDrawingBrush([{ x, y }]);
+    drawingBrush.current = [{ x, y }];
   }
 
   function updateBrush(x: number, y: number) {
-    setDrawingBrush((current) => [...current, { x, y }]);
+    drawingBrush.current.push({ x, y });
   }
 
   function finishBrush() {
-    if (drawingBrush.length === 0) return;
+    const points = drawingBrush.current;
+
+    drawingBrush.current = [];
+
+    if (points.length === 0) return;
 
     addDrawing({
       id: crypto.randomUUID(),
       type: "brush",
-      points: drawingBrush,
+      points,
     });
-
-    setDrawingBrush([]);
   }
 
   function undo() {

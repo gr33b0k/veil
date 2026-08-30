@@ -139,22 +139,15 @@ function ImageEditor({ image }: ImageViewerProps) {
         viewport,
         drawings,
         selectedDrawingId,
-        drawingRect,
-        drawingBrush,
+        drawingRect: drawingRect.current,
+        drawingBrush: drawingBrush.current,
       });
     });
   }
 
   useEffect(() => {
     scheduleCanvasDraw();
-  }, [
-    imageElement,
-    viewport,
-    drawings,
-    selectedDrawingId,
-    drawingRect,
-    drawingBrush,
-  ]);
+  }, [imageElement, viewport, drawings, selectedDrawingId]);
 
   function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
     if (!imageElement || e.button === 2) return;
@@ -208,15 +201,17 @@ function ImageEditor({ image }: ImageViewerProps) {
 
     switch (tool) {
       case "rectangle":
-        if (!drawingRect) return;
+        if (!drawingRect.current) return;
 
         updateRectangle(point.x, point.y);
+        scheduleCanvasDraw();
 
         break;
       case "brush":
-        if (drawingBrush.length === 0) return;
+        if (drawingBrush.current.length === 0) return;
 
         updateBrush(point.x, point.y);
+        scheduleCanvasDraw();
 
         break;
     }
