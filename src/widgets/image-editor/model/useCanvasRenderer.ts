@@ -1,10 +1,11 @@
 import type { Drawing, Point, Rectangle, Viewport } from "@/features";
 import { useEffect, useRef } from "react";
-import { drawCanvas } from "../lib/drawCanvas";
+import { drawCanvas, renderCache } from "../lib/render";
 
 type UseCanvasRendererParams = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
-  offscreenCanvasRef: React.RefObject<HTMLCanvasElement | null>;
+  tempCanvasRef: React.RefObject<HTMLCanvasElement | null>;
+  cacheCanvasRef: React.RefObject<HTMLCanvasElement | null>;
 
   imageElement: HTMLImageElement | null;
   viewport: Viewport;
@@ -18,7 +19,8 @@ type UseCanvasRendererParams = {
 
 export function useCanvasRenderer({
   canvasRef,
-  offscreenCanvasRef,
+  tempCanvasRef,
+  cacheCanvasRef,
   imageElement,
   viewport,
   drawings,
@@ -39,13 +41,15 @@ export function useCanvasRenderer({
       if (!imageElement) return;
 
       const canvas = canvasRef.current;
-      const offscreenCanvas = offscreenCanvasRef.current;
+      const tempCanvas = tempCanvasRef.current;
+      const cacheCanvas = cacheCanvasRef.current;
 
-      if (!canvas || !offscreenCanvas) return;
+      if (!canvas || !tempCanvas || !cacheCanvas) return;
 
       drawCanvas({
         canvas,
-        offscreenCanvas,
+        tempCanvas,
+        cacheCanvas,
         image: imageElement,
         viewport,
         drawings,
@@ -59,6 +63,21 @@ export function useCanvasRenderer({
   useEffect(() => {
     scheduleDraw();
   }, [imageElement, viewport, drawings, selectedDrawingId]);
+
+  useEffect(() => {
+    if (!imageElement) return;
+
+    const canvas = canvasRef.current;
+    const cacheCanvas = cacheCanvasRef.current;
+
+    if (!canvas || !cacheCanvas) return;
+
+    renderCache({
+      cacheCanvas,
+      image: imageElement,
+      drawings,
+    });
+  }, [imageElement, drawings]);
 
   useEffect(() => {
     return () => {

@@ -5,13 +5,11 @@ import { getImageScale } from "../lib/coordinates";
 
 type UseCanvasViewportProps = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
-  offscreenCanvasRef: React.RefObject<HTMLCanvasElement | null>;
   image: HTMLImageElement | null;
 };
 
 export function useCanvasViewport({
   canvasRef,
-  offscreenCanvasRef,
   image,
 }: UseCanvasViewportProps) {
   const [viewport, setViewport] = useState<Viewport>({
@@ -97,9 +95,8 @@ export function useCanvasViewport({
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const offCanvas = offscreenCanvasRef.current;
 
-    if (!canvas || !offCanvas) return;
+    if (!canvas) return;
 
     const resizeObserver = new ResizeObserver(() => {
       const rect = canvas.getBoundingClientRect();
@@ -107,8 +104,6 @@ export function useCanvasViewport({
 
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
-      offCanvas.width = canvas.width;
-      offCanvas.height = canvas.height;
     });
 
     resizeObserver.observe(canvas);

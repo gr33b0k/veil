@@ -23,10 +23,15 @@ function ImageEditor({ image }: ImageViewerProps) {
   const [tool, setTool] = useState<Tool>("cursor");
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const tempCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const cacheCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  if (!offscreenCanvasRef.current) {
-    offscreenCanvasRef.current = document.createElement("canvas");
+  if (!tempCanvasRef.current) {
+    tempCanvasRef.current = document.createElement("canvas");
+  }
+
+  if (!cacheCanvasRef.current) {
+    cacheCanvasRef.current = document.createElement("canvas");
   }
 
   const [imageElement, setImageElement] = useState<HTMLImageElement | null>(
@@ -36,6 +41,21 @@ function ImageEditor({ image }: ImageViewerProps) {
   const [selectedDrawingId, setSelectedDrawingId] = useState<string | null>(
     null,
   );
+
+  useEffect(() => {
+    if (!imageElement) return;
+
+    const tempCanvas = tempCanvasRef.current;
+    const cacheCanvas = cacheCanvasRef.current;
+
+    if (!tempCanvas || !cacheCanvas) return;
+
+    cacheCanvas.width = imageElement.naturalWidth;
+    cacheCanvas.height = imageElement.naturalHeight;
+
+    tempCanvas.width = imageElement.naturalWidth;
+    tempCanvas.height = imageElement.naturalHeight;
+  }, [imageElement]);
 
   useEffect(() => {
     const img = new Image();
@@ -65,7 +85,6 @@ function ImageEditor({ image }: ImageViewerProps) {
     handleFit,
   } = useCanvasViewport({
     canvasRef,
-    offscreenCanvasRef,
     image: imageElement,
   });
 
@@ -90,7 +109,8 @@ function ImageEditor({ image }: ImageViewerProps) {
 
   const { scheduleDraw } = useCanvasRenderer({
     canvasRef,
-    offscreenCanvasRef,
+    tempCanvasRef,
+    cacheCanvasRef,
     imageElement,
     viewport,
     drawings,
