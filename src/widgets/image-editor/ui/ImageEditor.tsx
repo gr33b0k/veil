@@ -121,9 +121,15 @@ function ImageEditor({ image }: ImageViewerProps) {
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Delete" && selectedDrawingId) {
-        deleteDrawing(selectedDrawingId);
-        setSelectedDrawingId(null);
+      if (selectedDrawingId) {
+        if (e.key === "Delete") {
+          deleteDrawing(selectedDrawingId);
+          setSelectedDrawingId(null);
+        }
+
+        if (e.key === "Escape") {
+          setSelectedDrawingId(null);
+        }
       }
 
       const modifier = e.ctrlKey || e.metaKey;
@@ -243,6 +249,7 @@ function ImageEditor({ image }: ImageViewerProps) {
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
+        onContextMenu={(e) => e.preventDefault()}
       />
 
       <Toolbar
