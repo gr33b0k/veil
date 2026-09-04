@@ -3,6 +3,7 @@ import type { Viewport, Rectangle, Point, Drawing } from "@/features";
 
 type RenderCacheParams = {
   cacheCanvas: HTMLCanvasElement;
+  tempCanvas: HTMLCanvasElement;
 
   image: HTMLImageElement;
 
@@ -22,6 +23,9 @@ type DrawCanvasParams = {
 
   drawingRect: Rectangle | null;
   drawingBrush: Point[];
+
+  brushSize: number;
+  blurIntensity: number;
 };
 
 function drawRectangleMask(ctx: CanvasRenderingContext2D, rect: Rectangle) {
@@ -30,8 +34,14 @@ function drawRectangleMask(ctx: CanvasRenderingContext2D, rect: Rectangle) {
   ctx.fillRect(x, y, width, height);
 }
 
-function drawBrushPath(ctx: CanvasRenderingContext2D, points: Point[]) {
+function drawBrushPath(
+  ctx: CanvasRenderingContext2D,
+  points: Point[],
+  size: number,
+) {
   if (points.length === 0) return;
+
+  ctx.lineWidth = size;
 
   ctx.beginPath();
 
@@ -81,44 +91,50 @@ function drawSelection(
   ctx.restore();
 }
 
-function renderDrawingToCache(ctx: CanvasRenderingContext2D, drawing: Drawing) {
+function drawDrawingMask(ctx: CanvasRenderingContext2D, drawing: Drawing) {
   if (drawing.type === "rectangle") {
     drawRectangleMask(ctx, drawing.rectangle);
   }
 
   if (drawing.type === "brush") {
-    drawBrushPath(ctx, drawing.points);
+    drawBrushPath(ctx, drawing.points, drawing.size);
   }
 }
 
 export function renderCache({
   cacheCanvas,
+  tempCanvas,
   image,
   drawings,
 }: RenderCacheParams) {
-  const ctx = cacheCanvas.getContext("2d");
+  const cacheCtx = cacheCanvas.getContext("2d");
+  const tempCtx = tempCanvas.getContext("2d");
 
-  if (!ctx) return;
+  if (!cacheCtx || !tempCtx) return;
 
-  ctx.clearRect(0, 0, cacheCanvas.width, cacheCanvas.height);
-
-  ctx.save();
-
-  ctx.lineWidth = 100;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.strokeStyle = "black";
-  ctx.fillStyle = "black";
+  cacheCtx.clearRect(0, 0, cacheCanvas.width, cacheCanvas.height);
 
   for (const drawing of drawings) {
-    renderDrawingToCache(ctx, drawing);
+    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+    tempCtx.save();
+
+    tempCtx.lineCap = "round";
+    tempCtx.lineJoin = "round";
+    tempCtx.strokeStyle = "black";
+    tempCtx.fillStyle = "black";
+
+    drawDrawingMask(tempCtx, drawing);
+
+    tempCtx.globalCompositeOperation = "source-in";
+    tempCtx.filter = `blur(${drawing.blurIntensity}px)`;
+
+    tempCtx.drawImage(image, 0, 0);
+
+    tempCtx.restore();
+
+    cacheCtx.drawImage(tempCanvas, 0, 0);
   }
-
-  ctx.globalCompositeOperation = "source-in";
-  ctx.filter = "blur(50px)";
-  ctx.drawImage(image, 0, 0);
-
-  ctx.restore();
 }
 
 export function drawCanvas({
@@ -131,6 +147,8 @@ export function drawCanvas({
   selectedDrawingId,
   drawingRect,
   drawingBrush,
+  brushSize,
+  blurIntensity,
 }: DrawCanvasParams) {
   const ctx = canvas.getContext("2d");
   const tmpCtx = tempCanvas.getContext("2d");
@@ -164,14 +182,13 @@ export function drawCanvas({
 
   tmpCtx.save();
 
-  tmpCtx.lineWidth = 100;
   tmpCtx.lineCap = "round";
   tmpCtx.lineJoin = "round";
   tmpCtx.strokeStyle = "black";
   tmpCtx.fillStyle = "black";
 
   if (drawingBrush.length > 0) {
-    drawBrushPath(tmpCtx, drawingBrush);
+    drawBrushPath(tmpCtx, drawingBrush, brushSize);
   }
 
   if (drawingRect) {
@@ -179,7 +196,7 @@ export function drawCanvas({
   }
 
   tmpCtx.globalCompositeOperation = "source-in";
-  tmpCtx.filter = "blur(50px)";
+  tmpCtx.filter = `blur(${blurIntensity}px)`;
   tmpCtx.drawImage(image, 0, 0);
 
   tmpCtx.restore();

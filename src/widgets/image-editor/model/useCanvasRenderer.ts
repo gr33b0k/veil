@@ -15,6 +15,9 @@ type UseCanvasRendererParams = {
 
   drawingRect: React.RefObject<Rectangle | null>;
   drawingBrush: React.RefObject<Point[]>;
+
+  brushSize: number;
+  blurIntensity: number;
 };
 
 export function useCanvasRenderer({
@@ -27,6 +30,8 @@ export function useCanvasRenderer({
   selectedDrawingId,
   drawingRect,
   drawingBrush,
+  brushSize,
+  blurIntensity,
 }: UseCanvasRendererParams) {
   const animationFrameRef = useRef<number | null>(null);
 
@@ -56,6 +61,8 @@ export function useCanvasRenderer({
         selectedDrawingId,
         drawingRect: drawingRect.current,
         drawingBrush: drawingBrush.current,
+        brushSize,
+        blurIntensity,
       });
     });
   }
@@ -67,13 +74,14 @@ export function useCanvasRenderer({
   useEffect(() => {
     if (!imageElement) return;
 
-    const canvas = canvasRef.current;
+    const tempCanvas = tempCanvasRef.current;
     const cacheCanvas = cacheCanvasRef.current;
 
-    if (!canvas || !cacheCanvas) return;
+    if (!tempCanvas || !cacheCanvas) return;
 
     renderCache({
       cacheCanvas,
+      tempCanvas,
       image: imageElement,
       drawings,
     });

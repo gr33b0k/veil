@@ -49,7 +49,7 @@ export function useCanvasDrawing() {
     };
   }
 
-  function finishRectangle() {
+  function finishRectangle(blurIntensity: number) {
     const rectangle = drawingRect.current;
     if (!rectangle) return;
 
@@ -61,6 +61,7 @@ export function useCanvasDrawing() {
       id: crypto.randomUUID(),
       type: "rectangle",
       rectangle,
+      blurIntensity,
     });
   }
 
@@ -72,7 +73,7 @@ export function useCanvasDrawing() {
     drawingBrush.current.push({ x, y });
   }
 
-  function finishBrush() {
+  function finishBrush(size: number, blurIntensity: number) {
     const points = drawingBrush.current;
 
     drawingBrush.current = [];
@@ -83,6 +84,8 @@ export function useCanvasDrawing() {
       id: crypto.randomUUID(),
       type: "brush",
       points,
+      size,
+      blurIntensity,
     });
   }
 

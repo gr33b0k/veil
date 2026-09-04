@@ -1,1 +1,1 @@
-export { default as ImageViewer } from "./ui/ImageEditor";
+export { default as ImageEditor } from "./ui/ImageEditor";

@@ -1,25 +1,23 @@
 import {
   findDrawingAtPoint,
   getCanvasPoint,
+  getImageScale,
   useCanvasDrawing,
   useCanvasViewport,
   type Tool,
 } from "@/features";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Toolbar from "./Toolbar";
 import { useCanvasRenderer } from "../model/useCanvasRenderer";
+import { createBrushCursor } from "../lib/cursor";
 
-type ImageViewerProps = {
+type ImageEditorProps = {
   image: File;
+  brushSize: number;
+  blurIntensity: number;
 };
 
-const cursors: Record<Tool, string> = {
-  cursor: "cursor-default",
-  rectangle: "cursor-crosshair",
-  brush: "cursor-cell",
-};
-
-function ImageEditor({ image }: ImageViewerProps) {
+function ImageEditor({ image, brushSize, blurIntensity }: ImageEditorProps) {
   const [tool, setTool] = useState<Tool>("cursor");
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -117,7 +115,27 @@ function ImageEditor({ image }: ImageViewerProps) {
     selectedDrawingId,
     drawingRect,
     drawingBrush,
+    brushSize,
+    blurIntensity,
   });
+
+  const rect = canvasRef.current?.getBoundingClientRect();
+
+  const imageScale = rect
+    ? getImageScale({
+        canvasWidth: rect.width,
+        canvasHeight: rect.height,
+        imageWidth: imageElement?.naturalWidth ?? 0,
+        imageHeight: imageElement?.naturalHeight ?? 0,
+      }) * viewport.zoom
+    : 1;
+
+  const cursor = useMemo(() => {
+    if (tool === "cursor") return "default";
+    if (tool === "rectangle") return "crosshair";
+
+    return createBrushCursor(brushSize * imageScale);
+  }, [tool, brushSize, imageScale]);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -228,10 +246,10 @@ function ImageEditor({ image }: ImageViewerProps) {
     } else {
       switch (tool) {
         case "rectangle":
-          finishRectangle();
+          finishRectangle(blurIntensity);
           break;
         case "brush":
-          finishBrush();
+          finishBrush(brushSize, blurIntensity);
           break;
       }
     }
@@ -240,12 +258,11 @@ function ImageEditor({ image }: ImageViewerProps) {
   }
 
   return (
-    <>
+    <section className="relative min-w-0 h-full flex-1">
       <canvas
         ref={canvasRef}
-        className={`max-w-full max-h-full object-contain bg-checker rounded-xl ${
-          cursors[tool]
-        }`}
+        className="w-full h-full bg-checker"
+        style={{ cursor }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -259,7 +276,7 @@ function ImageEditor({ image }: ImageViewerProps) {
         currentTool={tool}
         onToolChange={setTool}
       />
-    </>
+    </section>
   );
 }
 

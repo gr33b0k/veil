@@ -1,8 +1,9 @@
 import { useState } from "react";
 
 import { FileUpload } from "@/features";
-import { ImageViewer } from "@/widgets";
+import { ImageEditor } from "@/widgets";
 import { Lock, SlidersHorizontal, WandSparkles } from "lucide-react";
+import { SettingsPanel } from "@/widgets/settings-panel";
 
 const features = [
   {
@@ -24,10 +25,12 @@ const features = [
 
 function Workspace() {
   const [image, setImage] = useState<File | null>(null);
+  const [brushSize, setBrushSize] = useState(100);
+  const [blurIntensity, setBlurIntensity] = useState(100);
 
   return (
     <main
-      className={`relative h-full w-full flex overflow-hidden p-6 gap-4 ${
+      className={`relative h-full w-full flex overflow-hidden ${
         !image ? "flex-col justify-center items-center p-15 gap-10" : ""
       }`}
     >
@@ -62,7 +65,19 @@ function Workspace() {
           </ul>
         </>
       ) : (
-        <ImageViewer image={image} />
+        <>
+          <ImageEditor
+            image={image}
+            brushSize={brushSize}
+            blurIntensity={blurIntensity}
+          />
+          <SettingsPanel
+            brushSize={brushSize}
+            onBrushSizeChange={setBrushSize}
+            blurIntensity={blurIntensity}
+            onBlurIntensityChange={setBlurIntensity}
+          />
+        </>
       )}
     </main>
   );
