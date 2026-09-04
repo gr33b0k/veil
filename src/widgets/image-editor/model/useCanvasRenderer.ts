@@ -74,8 +74,8 @@ export function useCanvasRenderer({
   useEffect(() => {
     if (!imageElement) return;
 
-    const tempCanvas = tempCanvasRef.current;
     const cacheCanvas = cacheCanvasRef.current;
+    const tempCanvas = tempCanvasRef.current;
 
     if (!tempCanvas || !cacheCanvas) return;
 

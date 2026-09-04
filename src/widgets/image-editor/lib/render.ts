@@ -127,7 +127,7 @@ export function renderCache({
     drawDrawingMask(tempCtx, drawing);
 
     tempCtx.globalCompositeOperation = "source-in";
-    tempCtx.filter = `blur(${drawing.blurIntensity}px)`;
+    tempCtx.filter = `blur(${drawing.blurIntensity * (image.naturalWidth / 1920)}px)`;
 
     tempCtx.drawImage(image, 0, 0);
 
@@ -196,7 +196,7 @@ export function drawCanvas({
   }
 
   tmpCtx.globalCompositeOperation = "source-in";
-  tmpCtx.filter = `blur(${blurIntensity}px)`;
+  tmpCtx.filter = `blur(${blurIntensity * (image.naturalWidth / 1920)}px)`;
   tmpCtx.drawImage(image, 0, 0);
 
   tmpCtx.restore();

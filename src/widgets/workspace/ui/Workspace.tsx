@@ -5,7 +5,7 @@ import { ImageEditor } from "@/widgets";
 import { Lock, SlidersHorizontal, WandSparkles } from "lucide-react";
 import { SettingsPanel } from "@/widgets/settings-panel";
 
-type WorkshopProps = {
+type WorkspaceProps = {
   image: File | null;
   onImageChange: (image: File) => void;
 };
@@ -28,9 +28,9 @@ const features = [
   },
 ];
 
-function Workspace({ image, onImageChange }: WorkshopProps) {
-  const [brushSize, setBrushSize] = useState(100);
-  const [blurIntensity, setBlurIntensity] = useState(100);
+function Workspace({ image, onImageChange }: WorkspaceProps) {
+  const [brushSize, setBrushSize] = useState(50);
+  const [blurIntensity, setBlurIntensity] = useState(5);
 
   return (
     <main
