@@ -5,6 +5,11 @@ import { ImageEditor } from "@/widgets";
 import { Lock, SlidersHorizontal, WandSparkles } from "lucide-react";
 import { SettingsPanel } from "@/widgets/settings-panel";
 
+type WorkshopProps = {
+  image: File | null;
+  onImageChange: (image: File) => void;
+};
+
 const features = [
   {
     title: "Local processing",
@@ -23,8 +28,7 @@ const features = [
   },
 ];
 
-function Workspace() {
-  const [image, setImage] = useState<File | null>(null);
+function Workspace({ image, onImageChange }: WorkshopProps) {
   const [brushSize, setBrushSize] = useState(100);
   const [blurIntensity, setBlurIntensity] = useState(100);
 
@@ -46,7 +50,7 @@ function Workspace() {
               locally, securely, and effortlessly
             </p>
           </div>
-          <FileUpload onUpload={setImage} />
+          <FileUpload onUpload={onImageChange} />
           <ul className="flex items-center">
             {features.map(({ title, description, icon: Icon }) => (
               <li
