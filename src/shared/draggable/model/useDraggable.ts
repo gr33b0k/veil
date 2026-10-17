@@ -14,6 +14,12 @@ export function useDraggable(initialPosition: Position) {
   });
 
   function onPointerDown(e: React.PointerEvent<HTMLElement>) {
+    if (
+      e.target instanceof Element &&
+      (e.target.closest("button") || !e.target.closest("header"))
+    )
+      return;
+
     e.currentTarget.setPointerCapture(e.pointerId);
 
     offsetRef.current = {

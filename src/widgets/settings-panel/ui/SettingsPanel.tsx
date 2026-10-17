@@ -1,6 +1,7 @@
 import type { Tool } from "@/features";
 import { Slider, useDraggable } from "@/shared";
-import { Brush, Square } from "lucide-react";
+import { Brush, PinIcon, PinOffIcon, Square } from "lucide-react";
+import { useState } from "react";
 
 type SettingsPanelProps = {
   tool: Tool;
@@ -19,29 +20,42 @@ function SettingsPanel({
   blurIntensity,
   onBlurIntensityChange,
 }: SettingsPanelProps) {
-  const { position, ...dragHandlers } = useDraggable({ x: 100, y: 100 });
+  const [isPinned, setIsPinned] = useState(true);
+  const { position, ...dragHandlers } = useDraggable({ x: 24, y: 100 });
 
   return (
     <aside
-      className={`absolute z-10 w-80 overflow-hidden rounded-2xl border border-border bg-elevated shadow-2xl ${tool === "cursor" ? "hidden" : ""}`}
+      className={`absolute z-10 w-80 overflow-hidden rounded-2xl border-2 border-border bg-elevated shadow-2xl ${tool === "cursor" ? "hidden" : ""}`}
       style={{
         left: position.x,
         top: position.y,
       }}
-      {...dragHandlers}
+      {...(!isPinned && dragHandlers)}
     >
-      <header className="flex items-center gap-3 border-b border-border bg-surface px-5 py-4 cursor-move select-none">
-        <div className="flex size-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
-          {tool === "brush" ? <Brush size={20} /> : <Square size={20} />}
+      <header
+        className={`flex items-center justify-between border-b border-border bg-surface px-5 py-4 ${!isPinned ? "cursor-move select-none" : "cursor-default"}`}
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
+            {tool === "brush" ? <Brush size={20} /> : <Square size={20} />}
+          </div>
+
+          <div>
+            <h2 className="font-golos text-xl font-medium text-text capitalize">
+              {tool}
+            </h2>
+
+            <p className="text-sm text-text-muted">Configure {tool} settings</p>
+          </div>
         </div>
 
-        <div>
-          <h2 className="font-golos text-xl font-medium text-text capitalize">
-            {tool}
-          </h2>
-
-          <p className="text-sm text-text-muted">Configure {tool} settings</p>
-        </div>
+        <button
+          type="button"
+          className="flex size-10 items-center justify-center rounded-xl bg-bg text-accent cursor-pointer hover:bg-accent/10"
+          onClick={() => setIsPinned((prev) => !prev)}
+        >
+          {isPinned ? <PinOffIcon size={20} /> : <PinIcon size={20} />}
+        </button>
       </header>
 
       <div className="flex flex-col *:p-5 divide-y divide-border">
