@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { FileUpload } from "@/features";
+import { FileUpload, type Tool } from "@/features";
 import { ImageEditor } from "@/widgets";
 import { Lock, SlidersHorizontal, WandSparkles } from "lucide-react";
 import { SettingsPanel } from "@/widgets/settings-panel";
@@ -29,6 +29,7 @@ const features = [
 ];
 
 function Workspace({ image, onImageChange }: WorkspaceProps) {
+  const [tool, setTool] = useState<Tool>("cursor");
   const [brushSize, setBrushSize] = useState(50);
   const [blurIntensity, setBlurIntensity] = useState(5);
 
@@ -72,15 +73,20 @@ function Workspace({ image, onImageChange }: WorkspaceProps) {
         <>
           <ImageEditor
             image={image}
+            tool={tool}
+            setTool={setTool}
             brushSize={brushSize}
             blurIntensity={blurIntensity}
           />
-          <SettingsPanel
-            brushSize={brushSize}
-            onBrushSizeChange={setBrushSize}
-            blurIntensity={blurIntensity}
-            onBlurIntensityChange={setBlurIntensity}
-          />
+
+          {tool !== "cursor" && (
+            <SettingsPanel
+              brushSize={brushSize}
+              onBrushSizeChange={setBrushSize}
+              blurIntensity={blurIntensity}
+              onBlurIntensityChange={setBlurIntensity}
+            />
+          )}
         </>
       )}
     </main>

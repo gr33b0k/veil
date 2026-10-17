@@ -13,13 +13,21 @@ import { createBrushCursor } from "../lib/cursor";
 
 type ImageEditorProps = {
   image: File;
+
+  tool: Tool;
+  setTool: (tool: Tool) => void;
+
   brushSize: number;
   blurIntensity: number;
 };
 
-function ImageEditor({ image, brushSize, blurIntensity }: ImageEditorProps) {
-  const [tool, setTool] = useState<Tool>("cursor");
-
+function ImageEditor({
+  image,
+  tool,
+  setTool,
+  brushSize,
+  blurIntensity,
+}: ImageEditorProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const tempCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const cacheCanvasRef = useRef<HTMLCanvasElement | null>(null);

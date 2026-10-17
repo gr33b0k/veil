@@ -1,4 +1,4 @@
-import { Slider } from "@/shared";
+import { Slider, useDraggable } from "@/shared";
 import { Brush } from "lucide-react";
 
 type SettingsPanelProps = {
@@ -15,9 +15,18 @@ function SettingsPanel({
   blurIntensity,
   onBlurIntensityChange,
 }: SettingsPanelProps) {
+  const { position, ...dragHandlers } = useDraggable({ x: 100, y: 100 });
+
   return (
-    <aside className="absolute right-6 top-1/2 z-10 w-80 -translate-y-1/2 overflow-hidden rounded-2xl border border-border bg-elevated shadow-2xl">
-      <header className="flex items-center gap-3 border-b border-border bg-surface px-5 py-4">
+    <aside
+      className="absolute z-10 w-80 overflow-hidden rounded-2xl border border-border bg-elevated shadow-2xl"
+      style={{
+        left: position.x,
+        top: position.y,
+      }}
+      {...dragHandlers}
+    >
+      <header className="flex items-center gap-3 border-b border-border bg-surface px-5 py-4 cursor-move select-none">
         <div className="flex size-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
           <Brush size={20} />
         </div>
@@ -32,11 +41,11 @@ function SettingsPanel({
       <div className="flex flex-col *:p-5 divide-y divide-border">
         <Slider
           title="Blur intensity"
-          units="px"
+          units=""
           value={blurIntensity}
           onChange={onBlurIntensityChange}
-          min={0}
-          max={200}
+          min={1}
+          max={10}
           name="brush-size"
         />
         <Slider
