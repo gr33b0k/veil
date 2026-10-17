@@ -78,15 +78,13 @@ function Workspace({ image, onImageChange }: WorkspaceProps) {
             brushSize={brushSize}
             blurIntensity={blurIntensity}
           />
-
-          {tool !== "cursor" && (
-            <SettingsPanel
-              brushSize={brushSize}
-              onBrushSizeChange={setBrushSize}
-              blurIntensity={blurIntensity}
-              onBlurIntensityChange={setBlurIntensity}
-            />
-          )}
+          <SettingsPanel
+            tool={tool}
+            brushSize={brushSize}
+            onBrushSizeChange={setBrushSize}
+            blurIntensity={blurIntensity}
+            onBlurIntensityChange={setBlurIntensity}
+          />
         </>
       )}
     </main>
