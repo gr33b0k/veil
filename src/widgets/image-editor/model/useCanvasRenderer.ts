@@ -25,8 +25,7 @@ type UseCanvasRendererParams = {
   drawingBrush: React.RefObject<Point[]>;
 
   brushSize: number;
-  blurIntensity: number;
-
+  effectIntensity: number;
   censorType: CensorType;
 };
 
@@ -43,7 +42,7 @@ export function useCanvasRenderer({
   drawingRect,
   drawingBrush,
   brushSize,
-  blurIntensity,
+  effectIntensity,
   censorType,
 }: UseCanvasRendererParams) {
   const animationFrameRef = useRef<number | null>(null);
@@ -86,7 +85,7 @@ export function useCanvasRenderer({
         drawingRect: drawingRect.current,
         drawingBrush: drawingBrush.current,
         brushSize,
-        blurIntensity,
+        effectIntensity,
         censorType,
       });
     });

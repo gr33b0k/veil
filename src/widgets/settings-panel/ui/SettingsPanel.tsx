@@ -10,8 +10,8 @@ type SettingsPanelProps = {
   brushSize: number;
   onBrushSizeChange: (brushSize: number) => void;
 
-  blurIntensity: number;
-  onBlurIntensityChange: (blur: number) => void;
+  effectIntensity: number;
+  onEffectIntensityChange: (blur: number) => void;
 
   censorType: CensorType;
   onCensorTypeChange: (censorType: CensorType) => void;
@@ -21,8 +21,8 @@ function SettingsPanel({
   tool,
   brushSize,
   onBrushSizeChange,
-  blurIntensity,
-  onBlurIntensityChange,
+  effectIntensity,
+  onEffectIntensityChange,
   censorType,
   onCensorTypeChange,
 }: SettingsPanelProps) {
@@ -79,8 +79,8 @@ function SettingsPanel({
         <Slider
           title="Blur intensity"
           units=""
-          value={blurIntensity}
-          onChange={onBlurIntensityChange}
+          value={effectIntensity}
+          onChange={onEffectIntensityChange}
           min={1}
           max={10}
           name="brush-size"

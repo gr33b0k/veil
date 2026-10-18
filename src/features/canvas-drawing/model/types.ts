@@ -17,7 +17,7 @@ export type Drawing =
       id: string;
       type: "rectangle";
       rectangle: Rectangle;
-      blurIntensity: number;
+      effectIntensity: number;
       censorType: CensorType;
     }
   | {
@@ -25,6 +25,6 @@ export type Drawing =
       type: "brush";
       points: Point[];
       size: number;
-      blurIntensity: number;
+      effectIntensity: number;
       censorType: CensorType;
     };

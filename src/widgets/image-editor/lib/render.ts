@@ -36,8 +36,7 @@ type DrawCanvasParams = {
   drawingBrush: Point[];
 
   brushSize: number;
-  blurIntensity: number;
-
+  effectIntensity: number;
   censorType: CensorType;
 };
 
@@ -152,7 +151,7 @@ export function renderCache({
         cacheCanvas,
         tempCanvas,
         effectCanvas,
-        drawing.blurIntensity * (image.naturalWidth / 1920),
+        drawing.effectIntensity * (image.naturalWidth / 1920),
       );
     }
 
@@ -162,7 +161,7 @@ export function renderCache({
         tempCanvas,
         effectCanvas,
         pixelateCanvas,
-        drawing.blurIntensity * (image.naturalWidth / 1920),
+        drawing.effectIntensity,
       );
     }
 
@@ -183,7 +182,7 @@ export function drawCanvas({
   drawingRect,
   drawingBrush,
   brushSize,
-  blurIntensity,
+  effectIntensity,
   censorType,
 }: DrawCanvasParams) {
   const ctx = canvas.getContext("2d");
@@ -238,7 +237,7 @@ export function drawCanvas({
         cacheCanvas,
         tempCanvas,
         effectCanvas,
-        blurIntensity * (image.naturalWidth / 1920),
+        effectIntensity * (image.naturalWidth / 1920),
       );
 
     if (censorType === "pixelate")
@@ -247,7 +246,7 @@ export function drawCanvas({
         tempCanvas,
         effectCanvas,
         pixelateCanvas,
-        blurIntensity * (image.naturalWidth / 1920),
+        effectIntensity,
       );
   }
 

@@ -19,7 +19,7 @@ type ImageEditorProps = {
   setTool: (tool: Tool) => void;
 
   brushSize: number;
-  blurIntensity: number;
+  effectIntensity: number;
   censorType: CensorType;
 };
 
@@ -28,7 +28,7 @@ function ImageEditor({
   tool,
   setTool,
   brushSize,
-  blurIntensity,
+  effectIntensity,
   censorType,
 }: ImageEditorProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -143,7 +143,7 @@ function ImageEditor({
     drawingRect,
     drawingBrush,
     brushSize,
-    blurIntensity,
+    effectIntensity,
     censorType,
   });
 
@@ -274,10 +274,10 @@ function ImageEditor({
     } else {
       switch (tool) {
         case "rectangle":
-          finishRectangle(blurIntensity, censorType);
+          finishRectangle(effectIntensity, censorType);
           break;
         case "brush":
-          finishBrush(brushSize, blurIntensity, censorType);
+          finishBrush(brushSize, effectIntensity, censorType);
           break;
       }
     }

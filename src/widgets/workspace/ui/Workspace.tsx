@@ -32,7 +32,8 @@ function Workspace({ image, onImageChange }: WorkspaceProps) {
   const [tool, setTool] = useState<Tool>("cursor");
 
   const [brushSize, setBrushSize] = useState(50);
-  const [blurIntensity, setBlurIntensity] = useState(5);
+
+  const [effectIntensity, setEffectIntensity] = useState(5);
   const [censorType, setCensorType] = useState<CensorType>("blur");
 
   return (
@@ -78,15 +79,15 @@ function Workspace({ image, onImageChange }: WorkspaceProps) {
             tool={tool}
             setTool={setTool}
             brushSize={brushSize}
-            blurIntensity={blurIntensity}
+            effectIntensity={effectIntensity}
             censorType={censorType}
           />
           <SettingsPanel
             tool={tool}
             brushSize={brushSize}
             onBrushSizeChange={setBrushSize}
-            blurIntensity={blurIntensity}
-            onBlurIntensityChange={setBlurIntensity}
+            effectIntensity={effectIntensity}
+            onEffectIntensityChange={setEffectIntensity}
             censorType={censorType}
             onCensorTypeChange={setCensorType}
           />
