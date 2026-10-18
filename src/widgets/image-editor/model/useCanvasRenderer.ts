@@ -12,7 +12,8 @@ type UseCanvasRendererParams = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   tempCanvasRef: React.RefObject<HTMLCanvasElement | null>;
   cacheCanvasRef: React.RefObject<HTMLCanvasElement | null>;
-  blurCanvasRef: React.RefObject<HTMLCanvasElement | null>;
+  effectCanvasRef: React.RefObject<HTMLCanvasElement | null>;
+  pixelateCanvasRef: React.RefObject<HTMLCanvasElement | null>;
 
   imageElement: HTMLImageElement | null;
   viewport: Viewport;
@@ -33,7 +34,8 @@ export function useCanvasRenderer({
   canvasRef,
   tempCanvasRef,
   cacheCanvasRef,
-  blurCanvasRef,
+  effectCanvasRef,
+  pixelateCanvasRef,
   imageElement,
   viewport,
   drawings,
@@ -59,15 +61,24 @@ export function useCanvasRenderer({
       const canvas = canvasRef.current;
       const tempCanvas = tempCanvasRef.current;
       const cacheCanvas = cacheCanvasRef.current;
-      const blurCanvas = blurCanvasRef.current;
+      const effectCanvas = effectCanvasRef.current;
+      const pixelateCanvas = pixelateCanvasRef.current;
 
-      if (!canvas || !tempCanvas || !cacheCanvas || !blurCanvas) return;
+      if (
+        !canvas ||
+        !tempCanvas ||
+        !cacheCanvas ||
+        !effectCanvas ||
+        !pixelateCanvas
+      )
+        return;
 
       drawCanvas({
         canvas,
         tempCanvas,
         cacheCanvas,
-        blurCanvas,
+        effectCanvas,
+        pixelateCanvas,
         image: imageElement,
         viewport,
         drawings,
@@ -90,14 +101,16 @@ export function useCanvasRenderer({
 
     const cacheCanvas = cacheCanvasRef.current;
     const tempCanvas = tempCanvasRef.current;
-    const blurCanvas = blurCanvasRef.current;
+    const effectCanvas = effectCanvasRef.current;
+    const pixelateCanvas = pixelateCanvasRef.current;
 
-    if (!tempCanvas || !cacheCanvas || !blurCanvas) return;
+    if (!tempCanvas || !cacheCanvas || !effectCanvas || !pixelateCanvas) return;
 
     renderCache({
       cacheCanvas,
       tempCanvas,
-      blurCanvas,
+      effectCanvas,
+      pixelateCanvas,
       image: imageElement,
       drawings,
     });

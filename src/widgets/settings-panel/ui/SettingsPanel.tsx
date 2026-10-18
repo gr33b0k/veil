@@ -99,6 +99,12 @@ function SettingsPanel({
               Blur
             </button>
             <button
+              className={`flex-1 text-center py-1 px-3 rounded-lg text-text cursor-pointer ${censorType === "pixelate" ? "bg-accent" : "bg-bg hover:bg-accent/20"}`}
+              onClick={() => onCensorTypeChange("pixelate")}
+            >
+              Pixelate
+            </button>
+            <button
               className={`flex-1 text-center py-1 px-3 rounded-lg text-text cursor-pointer ${censorType === "solid" ? "bg-accent" : "bg-bg hover:bg-accent/20"}`}
               onClick={() => onCensorTypeChange("solid")}
             >

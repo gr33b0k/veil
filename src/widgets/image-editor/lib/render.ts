@@ -6,12 +6,13 @@ import type {
   Drawing,
   CensorType,
 } from "@/features";
-import { applyBlur } from "./effects";
+import { applyBlur, applyPixelization } from "./effects";
 
 type RenderCacheParams = {
   cacheCanvas: HTMLCanvasElement;
   tempCanvas: HTMLCanvasElement;
-  blurCanvas: HTMLCanvasElement;
+  effectCanvas: HTMLCanvasElement;
+  pixelateCanvas: HTMLCanvasElement;
 
   image: HTMLImageElement;
 
@@ -22,7 +23,8 @@ type DrawCanvasParams = {
   canvas: HTMLCanvasElement;
   tempCanvas: HTMLCanvasElement;
   cacheCanvas: HTMLCanvasElement;
-  blurCanvas: HTMLCanvasElement;
+  effectCanvas: HTMLCanvasElement;
+  pixelateCanvas: HTMLCanvasElement;
 
   image: HTMLImageElement;
   viewport: Viewport;
@@ -115,7 +117,8 @@ function drawDrawingMask(ctx: CanvasRenderingContext2D, drawing: Drawing) {
 export function renderCache({
   cacheCanvas,
   tempCanvas,
-  blurCanvas,
+  effectCanvas,
+  pixelateCanvas,
   image,
   drawings,
 }: RenderCacheParams) {
@@ -144,14 +147,26 @@ export function renderCache({
       continue;
     }
 
-    applyBlur(
-      cacheCanvas,
-      tempCanvas,
-      blurCanvas,
-      drawing.blurIntensity * (image.naturalWidth / 1920),
-    );
+    if (drawing.censorType === "blur") {
+      applyBlur(
+        cacheCanvas,
+        tempCanvas,
+        effectCanvas,
+        drawing.blurIntensity * (image.naturalWidth / 1920),
+      );
+    }
 
-    cacheCtx.drawImage(blurCanvas, 0, 0);
+    if (drawing.censorType === "pixelate") {
+      applyPixelization(
+        cacheCanvas,
+        tempCanvas,
+        effectCanvas,
+        pixelateCanvas,
+        drawing.blurIntensity * (image.naturalWidth / 1920),
+      );
+    }
+
+    cacheCtx.drawImage(effectCanvas, 0, 0);
   }
 }
 
@@ -159,7 +174,8 @@ export function drawCanvas({
   canvas,
   tempCanvas,
   cacheCanvas,
-  blurCanvas,
+  effectCanvas,
+  pixelateCanvas,
   image,
   viewport,
   drawings,
@@ -216,21 +232,33 @@ export function drawCanvas({
   ctx.translate(viewport.x, viewport.y);
   ctx.scale(imageScale, imageScale);
 
-  if (hasCurrentDrawing && censorType === "blur") {
-    applyBlur(
-      cacheCanvas,
-      tempCanvas,
-      blurCanvas,
-      blurIntensity * (image.naturalWidth / 1920),
-    );
+  if (hasCurrentDrawing) {
+    if (censorType === "blur")
+      applyBlur(
+        cacheCanvas,
+        tempCanvas,
+        effectCanvas,
+        blurIntensity * (image.naturalWidth / 1920),
+      );
+
+    if (censorType === "pixelate")
+      applyPixelization(
+        cacheCanvas,
+        tempCanvas,
+        effectCanvas,
+        pixelateCanvas,
+        blurIntensity * (image.naturalWidth / 1920),
+      );
   }
 
   ctx.drawImage(cacheCanvas, 0, 0);
 
-  if (hasCurrentDrawing && censorType === "blur") {
-    ctx.drawImage(blurCanvas, 0, 0);
-  } else if (hasCurrentDrawing) {
-    ctx.drawImage(tempCanvas, 0, 0);
+  if (hasCurrentDrawing) {
+    if (censorType !== "solid") {
+      ctx.drawImage(effectCanvas, 0, 0);
+    } else {
+      ctx.drawImage(tempCanvas, 0, 0);
+    }
   }
 
   ctx.restore();

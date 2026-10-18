@@ -34,7 +34,8 @@ function ImageEditor({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const tempCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const cacheCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const blurCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const effectCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const pixelateCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   if (!tempCanvasRef.current) {
     tempCanvasRef.current = document.createElement("canvas");
@@ -44,8 +45,12 @@ function ImageEditor({
     cacheCanvasRef.current = document.createElement("canvas");
   }
 
-  if (!blurCanvasRef.current) {
-    blurCanvasRef.current = document.createElement("canvas");
+  if (!effectCanvasRef.current) {
+    effectCanvasRef.current = document.createElement("canvas");
+  }
+
+  if (!pixelateCanvasRef.current) {
+    pixelateCanvasRef.current = document.createElement("canvas");
   }
 
   const [imageElement, setImageElement] = useState<HTMLImageElement | null>(
@@ -61,9 +66,9 @@ function ImageEditor({
 
     const tempCanvas = tempCanvasRef.current;
     const cacheCanvas = cacheCanvasRef.current;
-    const blurCanvas = blurCanvasRef.current;
+    const effectCanvas = effectCanvasRef.current;
 
-    if (!tempCanvas || !cacheCanvas || !blurCanvas) return;
+    if (!tempCanvas || !cacheCanvas || !effectCanvas) return;
 
     cacheCanvas.width = imageElement.naturalWidth;
     cacheCanvas.height = imageElement.naturalHeight;
@@ -71,8 +76,8 @@ function ImageEditor({
     tempCanvas.width = imageElement.naturalWidth;
     tempCanvas.height = imageElement.naturalHeight;
 
-    blurCanvas.width = imageElement.naturalWidth;
-    blurCanvas.height = imageElement.naturalHeight;
+    effectCanvas.width = imageElement.naturalWidth;
+    effectCanvas.height = imageElement.naturalHeight;
   }, [imageElement]);
 
   useEffect(() => {
@@ -129,7 +134,8 @@ function ImageEditor({
     canvasRef,
     tempCanvasRef,
     cacheCanvasRef,
-    blurCanvasRef,
+    effectCanvasRef,
+    pixelateCanvasRef,
     imageElement,
     viewport,
     drawings,

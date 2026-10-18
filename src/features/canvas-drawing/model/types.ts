@@ -10,7 +10,7 @@ export type Point = {
   y: number;
 };
 
-export type CensorType = "blur" | "solid";
+export type CensorType = "blur" | "solid" | "pixelate";
 
 export type Drawing =
   | {
