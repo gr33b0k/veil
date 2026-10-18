@@ -10,12 +10,15 @@ export type Point = {
   y: number;
 };
 
+export type CensorType = "blur" | "solid";
+
 export type Drawing =
   | {
       id: string;
       type: "rectangle";
       rectangle: Rectangle;
       blurIntensity: number;
+      censorType: CensorType;
     }
   | {
       id: string;
@@ -23,4 +26,5 @@ export type Drawing =
       points: Point[];
       size: number;
       blurIntensity: number;
+      censorType: CensorType;
     };

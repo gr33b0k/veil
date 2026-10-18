@@ -1,4 +1,5 @@
 import type { Tool } from "@/features";
+import type { CensorType } from "@/features/canvas-drawing";
 import { Slider, useDraggable } from "@/shared";
 import { Brush, PinIcon, PinOffIcon, Square } from "lucide-react";
 import { useState } from "react";
@@ -11,6 +12,9 @@ type SettingsPanelProps = {
 
   blurIntensity: number;
   onBlurIntensityChange: (blur: number) => void;
+
+  censorType: CensorType;
+  onCensorTypeChange: (censorType: CensorType) => void;
 };
 
 function SettingsPanel({
@@ -19,6 +23,8 @@ function SettingsPanel({
   onBrushSizeChange,
   blurIntensity,
   onBlurIntensityChange,
+  censorType,
+  onCensorTypeChange,
 }: SettingsPanelProps) {
   const [isPinned, setIsPinned] = useState(true);
   const { position, ...dragHandlers } = useDraggable({ x: 24, y: 100 });
@@ -79,6 +85,27 @@ function SettingsPanel({
           max={10}
           name="brush-size"
         />
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <label htmlFor="brush-size" className="font-medium text-text">
+              Censor type
+            </label>
+          </div>
+          <div className="flex gap-2">
+            <button
+              className={`flex-1 text-center py-1 px-3 rounded-lg text-text cursor-pointer ${censorType === "blur" ? "bg-accent" : "bg-bg hover:bg-accent/20"}`}
+              onClick={() => onCensorTypeChange("blur")}
+            >
+              Blur
+            </button>
+            <button
+              className={`flex-1 text-center py-1 px-3 rounded-lg text-text cursor-pointer ${censorType === "solid" ? "bg-accent" : "bg-bg hover:bg-accent/20"}`}
+              onClick={() => onCensorTypeChange("solid")}
+            >
+              Solid Fill
+            </button>
+          </div>
+        </div>
       </div>
     </aside>
   );

@@ -1,9 +1,17 @@
 import { getImageScale } from "@/features";
-import type { Viewport, Rectangle, Point, Drawing } from "@/features";
+import type {
+  Viewport,
+  Rectangle,
+  Point,
+  Drawing,
+  CensorType,
+} from "@/features";
+import { applyBlur } from "./effects";
 
 type RenderCacheParams = {
   cacheCanvas: HTMLCanvasElement;
   tempCanvas: HTMLCanvasElement;
+  blurCanvas: HTMLCanvasElement;
 
   image: HTMLImageElement;
 
@@ -14,6 +22,7 @@ type DrawCanvasParams = {
   canvas: HTMLCanvasElement;
   tempCanvas: HTMLCanvasElement;
   cacheCanvas: HTMLCanvasElement;
+  blurCanvas: HTMLCanvasElement;
 
   image: HTMLImageElement;
   viewport: Viewport;
@@ -26,6 +35,8 @@ type DrawCanvasParams = {
 
   brushSize: number;
   blurIntensity: number;
+
+  censorType: CensorType;
 };
 
 function drawRectangleMask(ctx: CanvasRenderingContext2D, rect: Rectangle) {
@@ -104,6 +115,7 @@ function drawDrawingMask(ctx: CanvasRenderingContext2D, drawing: Drawing) {
 export function renderCache({
   cacheCanvas,
   tempCanvas,
+  blurCanvas,
   image,
   drawings,
 }: RenderCacheParams) {
@@ -113,27 +125,33 @@ export function renderCache({
   if (!cacheCtx || !tempCtx) return;
 
   cacheCtx.clearRect(0, 0, cacheCanvas.width, cacheCanvas.height);
+  cacheCtx.drawImage(image, 0, 0);
 
   for (const drawing of drawings) {
     tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
 
     tempCtx.save();
-
     tempCtx.lineCap = "round";
     tempCtx.lineJoin = "round";
     tempCtx.strokeStyle = "black";
     tempCtx.fillStyle = "black";
 
     drawDrawingMask(tempCtx, drawing);
-
-    tempCtx.globalCompositeOperation = "source-in";
-    tempCtx.filter = `blur(${drawing.blurIntensity * (image.naturalWidth / 1920)}px)`;
-
-    tempCtx.drawImage(image, 0, 0);
-
     tempCtx.restore();
 
-    cacheCtx.drawImage(tempCanvas, 0, 0);
+    if (drawing.censorType === "solid") {
+      cacheCtx.drawImage(tempCanvas, 0, 0);
+      continue;
+    }
+
+    applyBlur(
+      cacheCanvas,
+      tempCanvas,
+      blurCanvas,
+      drawing.blurIntensity * (image.naturalWidth / 1920),
+    );
+
+    cacheCtx.drawImage(blurCanvas, 0, 0);
   }
 }
 
@@ -141,6 +159,7 @@ export function drawCanvas({
   canvas,
   tempCanvas,
   cacheCanvas,
+  blurCanvas,
   image,
   viewport,
   drawings,
@@ -149,6 +168,7 @@ export function drawCanvas({
   drawingBrush,
   brushSize,
   blurIntensity,
+  censorType,
 }: DrawCanvasParams) {
   const ctx = canvas.getContext("2d");
   const tmpCtx = tempCanvas.getContext("2d");
@@ -170,14 +190,6 @@ export function drawCanvas({
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, rect.width, rect.height);
 
-  ctx.save();
-
-  ctx.translate(viewport.x, viewport.y);
-  ctx.scale(imageScale, imageScale);
-  ctx.drawImage(image, 0, 0);
-
-  ctx.restore();
-
   tmpCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
 
   tmpCtx.save();
@@ -195,18 +207,31 @@ export function drawCanvas({
     drawRectangleMask(tmpCtx, drawingRect);
   }
 
-  tmpCtx.globalCompositeOperation = "source-in";
-  tmpCtx.filter = `blur(${blurIntensity * (image.naturalWidth / 1920)}px)`;
-  tmpCtx.drawImage(image, 0, 0);
-
   tmpCtx.restore();
+
+  const hasCurrentDrawing = drawingBrush.length > 0 || drawingRect !== null;
 
   ctx.save();
 
   ctx.translate(viewport.x, viewport.y);
   ctx.scale(imageScale, imageScale);
+
+  if (hasCurrentDrawing && censorType === "blur") {
+    applyBlur(
+      cacheCanvas,
+      tempCanvas,
+      blurCanvas,
+      blurIntensity * (image.naturalWidth / 1920),
+    );
+  }
+
   ctx.drawImage(cacheCanvas, 0, 0);
-  ctx.drawImage(tempCanvas, 0, 0);
+
+  if (hasCurrentDrawing && censorType === "blur") {
+    ctx.drawImage(blurCanvas, 0, 0);
+  } else if (hasCurrentDrawing) {
+    ctx.drawImage(tempCanvas, 0, 0);
+  }
 
   ctx.restore();
 

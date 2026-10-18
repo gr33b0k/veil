@@ -1,4 +1,10 @@
-import type { Drawing, Point, Rectangle, Viewport } from "@/features";
+import type {
+  CensorType,
+  Drawing,
+  Point,
+  Rectangle,
+  Viewport,
+} from "@/features";
 import { useEffect, useRef } from "react";
 import { drawCanvas, renderCache } from "../lib/render";
 
@@ -6,6 +12,7 @@ type UseCanvasRendererParams = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   tempCanvasRef: React.RefObject<HTMLCanvasElement | null>;
   cacheCanvasRef: React.RefObject<HTMLCanvasElement | null>;
+  blurCanvasRef: React.RefObject<HTMLCanvasElement | null>;
 
   imageElement: HTMLImageElement | null;
   viewport: Viewport;
@@ -18,12 +25,15 @@ type UseCanvasRendererParams = {
 
   brushSize: number;
   blurIntensity: number;
+
+  censorType: CensorType;
 };
 
 export function useCanvasRenderer({
   canvasRef,
   tempCanvasRef,
   cacheCanvasRef,
+  blurCanvasRef,
   imageElement,
   viewport,
   drawings,
@@ -32,6 +42,7 @@ export function useCanvasRenderer({
   drawingBrush,
   brushSize,
   blurIntensity,
+  censorType,
 }: UseCanvasRendererParams) {
   const animationFrameRef = useRef<number | null>(null);
 
@@ -48,13 +59,15 @@ export function useCanvasRenderer({
       const canvas = canvasRef.current;
       const tempCanvas = tempCanvasRef.current;
       const cacheCanvas = cacheCanvasRef.current;
+      const blurCanvas = blurCanvasRef.current;
 
-      if (!canvas || !tempCanvas || !cacheCanvas) return;
+      if (!canvas || !tempCanvas || !cacheCanvas || !blurCanvas) return;
 
       drawCanvas({
         canvas,
         tempCanvas,
         cacheCanvas,
+        blurCanvas,
         image: imageElement,
         viewport,
         drawings,
@@ -63,6 +76,7 @@ export function useCanvasRenderer({
         drawingBrush: drawingBrush.current,
         brushSize,
         blurIntensity,
+        censorType,
       });
     });
   }
@@ -76,12 +90,14 @@ export function useCanvasRenderer({
 
     const cacheCanvas = cacheCanvasRef.current;
     const tempCanvas = tempCanvasRef.current;
+    const blurCanvas = blurCanvasRef.current;
 
-    if (!tempCanvas || !cacheCanvas) return;
+    if (!tempCanvas || !cacheCanvas || !blurCanvas) return;
 
     renderCache({
       cacheCanvas,
       tempCanvas,
+      blurCanvas,
       image: imageElement,
       drawings,
     });

@@ -17,6 +17,7 @@ export {
   type Rectangle,
   type Point,
   type Drawing,
+  type CensorType,
 } from "./canvas-drawing";
 
 export { findDrawingAtPoint } from "./canvas-selection";

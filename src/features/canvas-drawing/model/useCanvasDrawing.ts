@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { Point, Rectangle, Drawing } from "./types";
+import type { Point, Rectangle, Drawing, CensorType } from "./types";
 
 export function useCanvasDrawing() {
   const [history, setHistory] = useState({
@@ -49,7 +49,7 @@ export function useCanvasDrawing() {
     };
   }
 
-  function finishRectangle(blurIntensity: number) {
+  function finishRectangle(blurIntensity: number, censorType: CensorType) {
     const rectangle = drawingRect.current;
     if (!rectangle) return;
 
@@ -62,6 +62,7 @@ export function useCanvasDrawing() {
       type: "rectangle",
       rectangle,
       blurIntensity,
+      censorType,
     });
   }
 
@@ -73,7 +74,11 @@ export function useCanvasDrawing() {
     drawingBrush.current.push({ x, y });
   }
 
-  function finishBrush(size: number, blurIntensity: number) {
+  function finishBrush(
+    size: number,
+    blurIntensity: number,
+    censorType: CensorType,
+  ) {
     const points = drawingBrush.current;
 
     drawingBrush.current = [];
@@ -86,6 +91,7 @@ export function useCanvasDrawing() {
       points,
       size,
       blurIntensity,
+      censorType,
     });
   }
 

@@ -4,6 +4,7 @@ import {
   getImageScale,
   useCanvasDrawing,
   useCanvasViewport,
+  type CensorType,
   type Tool,
 } from "@/features";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -19,6 +20,7 @@ type ImageEditorProps = {
 
   brushSize: number;
   blurIntensity: number;
+  censorType: CensorType;
 };
 
 function ImageEditor({
@@ -27,10 +29,12 @@ function ImageEditor({
   setTool,
   brushSize,
   blurIntensity,
+  censorType,
 }: ImageEditorProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const tempCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const cacheCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const blurCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   if (!tempCanvasRef.current) {
     tempCanvasRef.current = document.createElement("canvas");
@@ -38,6 +42,10 @@ function ImageEditor({
 
   if (!cacheCanvasRef.current) {
     cacheCanvasRef.current = document.createElement("canvas");
+  }
+
+  if (!blurCanvasRef.current) {
+    blurCanvasRef.current = document.createElement("canvas");
   }
 
   const [imageElement, setImageElement] = useState<HTMLImageElement | null>(
@@ -53,14 +61,18 @@ function ImageEditor({
 
     const tempCanvas = tempCanvasRef.current;
     const cacheCanvas = cacheCanvasRef.current;
+    const blurCanvas = blurCanvasRef.current;
 
-    if (!tempCanvas || !cacheCanvas) return;
+    if (!tempCanvas || !cacheCanvas || !blurCanvas) return;
 
     cacheCanvas.width = imageElement.naturalWidth;
     cacheCanvas.height = imageElement.naturalHeight;
 
     tempCanvas.width = imageElement.naturalWidth;
     tempCanvas.height = imageElement.naturalHeight;
+
+    blurCanvas.width = imageElement.naturalWidth;
+    blurCanvas.height = imageElement.naturalHeight;
   }, [imageElement]);
 
   useEffect(() => {
@@ -117,6 +129,7 @@ function ImageEditor({
     canvasRef,
     tempCanvasRef,
     cacheCanvasRef,
+    blurCanvasRef,
     imageElement,
     viewport,
     drawings,
@@ -125,6 +138,7 @@ function ImageEditor({
     drawingBrush,
     brushSize,
     blurIntensity,
+    censorType,
   });
 
   const rect = canvasRef.current?.getBoundingClientRect();
@@ -254,10 +268,10 @@ function ImageEditor({
     } else {
       switch (tool) {
         case "rectangle":
-          finishRectangle(blurIntensity);
+          finishRectangle(blurIntensity, censorType);
           break;
         case "brush":
-          finishBrush(brushSize, blurIntensity);
+          finishBrush(brushSize, blurIntensity, censorType);
           break;
       }
     }
