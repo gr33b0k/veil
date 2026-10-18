@@ -76,15 +76,17 @@ function SettingsPanel({
             name="brush-size"
           />
         )}
-        <Slider
-          title="Blur intensity"
-          units=""
-          value={effectIntensity}
-          onChange={onEffectIntensityChange}
-          min={1}
-          max={10}
-          name="brush-size"
-        />
+        {censorType !== "solid" && (
+          <Slider
+            title={censorType === "blur" ? "Blur intensity" : "Pixel size"}
+            units=""
+            value={effectIntensity}
+            onChange={onEffectIntensityChange}
+            min={1}
+            max={10}
+            name="effect-intensity"
+          />
+        )}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <label htmlFor="brush-size" className="font-medium text-text">
