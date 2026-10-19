@@ -1,5 +1,7 @@
 export { FileUpload } from "./file-upload";
 
+export { ExportButton, downloadImage } from "./export-image";
+
 export {
   ZoomControls,
   FitButton,

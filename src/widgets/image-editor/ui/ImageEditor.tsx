@@ -6,6 +6,7 @@ import {
   useCanvasViewport,
   type CensorType,
   type Tool,
+  downloadImage,
 } from "@/features";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Toolbar from "./Toolbar";
@@ -21,6 +22,8 @@ type ImageEditorProps = {
   brushSize: number;
   effectIntensity: number;
   censorType: CensorType;
+
+  exportImageRef: React.RefObject<(() => Promise<void>) | null>;
 };
 
 function ImageEditor({
@@ -30,6 +33,7 @@ function ImageEditor({
   brushSize,
   effectIntensity,
   censorType,
+  exportImageRef,
 }: ImageEditorProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const tempCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -199,6 +203,37 @@ function ImageEditor({
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedDrawingId]);
+
+  function getImageBlob(): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const canvas = cacheCanvasRef.current;
+
+      if (!canvas) {
+        reject(new Error("Canvas is not initialized"));
+        return;
+      }
+
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          reject(new Error("Failed to export image"));
+          return;
+        }
+
+        resolve(blob);
+      }, "image/png");
+    });
+  }
+
+  useEffect(() => {
+    exportImageRef.current = async () => {
+      const blob = await getImageBlob();
+      downloadImage(blob);
+    };
+
+    return () => {
+      exportImageRef.current = null;
+    };
+  }, [exportImageRef]);
 
   function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
     if (!imageElement || e.button === 2) return;

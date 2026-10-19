@@ -8,6 +8,7 @@ import { SettingsPanel } from "@/widgets/settings-panel";
 type WorkspaceProps = {
   image: File | null;
   onImageChange: (image: File) => void;
+  exportImageRef: React.RefObject<(() => Promise<void>) | null>;
 };
 
 const features = [
@@ -28,7 +29,7 @@ const features = [
   },
 ];
 
-function Workspace({ image, onImageChange }: WorkspaceProps) {
+function Workspace({ image, onImageChange, exportImageRef }: WorkspaceProps) {
   const [tool, setTool] = useState<Tool>("cursor");
 
   const [brushSize, setBrushSize] = useState(50);
@@ -81,6 +82,7 @@ function Workspace({ image, onImageChange }: WorkspaceProps) {
             brushSize={brushSize}
             effectIntensity={effectIntensity}
             censorType={censorType}
+            exportImageRef={exportImageRef}
           />
           <SettingsPanel
             tool={tool}
