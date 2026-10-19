@@ -3,8 +3,9 @@ import type { Point, Rectangle, Drawing, CensorType } from "./types";
 
 export function useCanvasDrawing() {
   const [history, setHistory] = useState({
-    drawings: [] as Drawing[],
-    redoStack: [] as Drawing[],
+    past: [] as Drawing[][],
+    present: [] as Drawing[],
+    future: [] as Drawing[][],
   });
 
   const rectStart = useRef<Point>({ x: 0, y: 0 });
@@ -13,24 +14,48 @@ export function useCanvasDrawing() {
 
   function addDrawing(drawing: Drawing) {
     setHistory((current) => ({
-      drawings: [...current.drawings, drawing],
-      redoStack: [],
+      past: [...current.past, current.present],
+      present: [...current.present, drawing],
+      future: [],
     }));
   }
 
   function deleteDrawing(drawingId: string) {
     setHistory((current) => {
-      const drawing = current.drawings.find(
+      const drawing = current.present.find(
         (drawing) => drawingId === drawing.id,
       );
 
       if (!drawing) return current;
 
       return {
-        drawings: current.drawings.filter(
-          (drawing) => drawing.id !== drawingId,
-        ),
-        redoStack: [...current.redoStack, drawing],
+        past: [...current.past, current.present],
+        present: current.present.filter((drawing) => drawing.id !== drawingId),
+        future: [],
+      };
+    });
+  }
+
+  function undo() {
+    setHistory((current) => {
+      if (current.past.length === 0) return current;
+
+      return {
+        past: current.past.slice(0, -1),
+        present: current.past[current.past.length - 1],
+        future: [...current.future, current.present],
+      };
+    });
+  }
+
+  function redo() {
+    setHistory((current) => {
+      if (current.future.length === 0) return current;
+
+      return {
+        past: [...current.past, current.present],
+        present: current.future[current.future.length - 1],
+        future: current.future.slice(0, -1),
       };
     });
   }
@@ -95,34 +120,8 @@ export function useCanvasDrawing() {
     });
   }
 
-  function undo() {
-    setHistory((current) => {
-      if (current.drawings.length === 0) return current;
-
-      const lastDrawing = current.drawings[current.drawings.length - 1];
-
-      return {
-        drawings: current.drawings.slice(0, -1),
-        redoStack: [...current.redoStack, lastDrawing],
-      };
-    });
-  }
-
-  function redo() {
-    setHistory((current) => {
-      if (current.redoStack.length === 0) return current;
-
-      const drawing = current.redoStack[current.redoStack.length - 1];
-
-      return {
-        drawings: [...current.drawings, drawing],
-        redoStack: current.redoStack.slice(0, -1),
-      };
-    });
-  }
-
   return {
-    drawings: history.drawings,
+    drawings: history.present,
     drawingRect,
     drawingBrush,
 
